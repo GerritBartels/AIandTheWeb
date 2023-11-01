@@ -4,16 +4,19 @@ import icecream as ic
 from bs4 import BeautifulSoup as bs
 from urllib.parse import urljoin, urlparse
 
+from index import Index
 
-class crawler:
 
-    def __init__(self, start_url):
+class Crawler:
+
+    def __init__(self, start_url, index):
 
         self.start_url = start_url
         self.base_netloc = urlparse(self.start_url).netloc
         self.url_stack = [self.start_url]
         self.visited = []
         self.session = requests.Session()
+        self.index = index
     
     def crawl(self):
 
@@ -29,8 +32,8 @@ class crawler:
 
         if response.status_code == 200 and "text/html" in response.headers["Content-Type"]: # evtl 300 codes 
             soup = bs(response.text, 'html.parser')
-            ic.ic(url)
-            # Add to index
+            text = soup.get_text()
+            self.index.add_to_cache(text, url)
 
        
             for link in soup.find_all('a'):
@@ -48,7 +51,16 @@ class crawler:
 
 
 if __name__ == '__main__':
-    start = time.time()
-    webcrawler = crawler(start_url = 'https://www.optikmeyer.de/')
+    start_time = time.time()
+    start_url = 'https://vm009.rz.uos.de/crawl/index.html'
+    index = Index()
+
+    webcrawler = Crawler(start_url, index)
     webcrawler.crawl()
-    print(time.time() - start)
+
+    index.build_index()
+    search_results = index.search('unicorn platypus')
+    
+    ic.ic(search_results)
+    elapsed_time = round(time.time() - start_time, 4)
+    print(f"Elapsed time: {elapsed_time} seconds")

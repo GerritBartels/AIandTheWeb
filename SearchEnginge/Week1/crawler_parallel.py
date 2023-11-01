@@ -6,9 +6,11 @@ from queue import Queue
 from bs4 import BeautifulSoup as bs
 from urllib.parse import urljoin, urlparse
 
+from index import Index
+
 
 class Crawler:
-    def __init__(self, start_url):
+    def __init__(self, start_url, index):
         self.start_url = start_url
         self.base_netloc = urlparse(start_url).netloc
         self.visited = set()
@@ -16,8 +18,9 @@ class Crawler:
         self.url_queue.put(start_url)
         self.session = requests.Session()
         self.lock = threading.Lock()
+        self.index = index
 
-    def crawl(self):
+    def _crawl(self):
         
         url = self.url_queue.get()
 
@@ -29,8 +32,9 @@ class Crawler:
         response = self.session.get(url)
 
         if response.status_code == 200 and "text/html" in response.headers["Content-Type"]:
-            ic.ic(url)
             soup = bs(response.text, 'html.parser')
+            text = soup.get_text()
+            self.index.add_to_cache(text, url)
 
             for link in soup.find_all('a'):
                 new_url = link.get('href')
@@ -48,7 +52,7 @@ class Crawler:
             for _ in range(num_threads):
                 if self.url_queue.empty():
                     break
-                thread = threading.Thread(target=self.crawl)
+                thread = threading.Thread(target=self._crawl)
                 threads.append(thread)
                 thread.start()
 
@@ -58,10 +62,17 @@ class Crawler:
 
 
 if __name__ == '__main__':
-    start = time.time()
-    start_url = 'https://launchgaia.ni.dfki.de/moodle/'
+    start_time = time.time()
+    start_url = 'https://vm009.rz.uos.de/crawl/index.html'
     num_threads = 1
+    index = Index()
 
-    crawler = Crawler(start_url)
-    crawler.start_crawling(num_threads)
-    print(time.time() - start)
+    webcrawler = Crawler(start_url, index)
+    webcrawler.start_crawling(num_threads)
+
+    index.build_index()
+    search_results = index.search('unicorn platypus')
+
+    ic.ic(search_results)
+    elapsed_time = round(time.time() - start_time, 4)
+    print(f"Elapsed time: {elapsed_time} seconds")
