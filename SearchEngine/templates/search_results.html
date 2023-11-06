@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AllWIx - Yeah Buddy</title>
+  </head>
+  <body>
+    <h1>Allmighty Web Index - AllWIx</h1>
+    <form action="/search" method="GET">
+      <input type="text" name="q" value="{{ query }}" placeholder="Search...">
+      <button type="submit">Search</button>
+    </form>
+
+    <br><br><br><br>
+
+    {% for result in search_results %}
+    <div class="result">
+        <a href="{{ result[0] }}">{{ result[3] }}</a>
+        <p>{{ result[2] }}</p>
+    </div>
+    {% endfor %}
+
+  </body>
+</html>
+

@@ -4,7 +4,7 @@ import icecream as ic
 from bs4 import BeautifulSoup as bs
 from urllib.parse import urljoin, urlparse
 
-from index import Index
+from custom_index import Index
 
 
 class Crawler:

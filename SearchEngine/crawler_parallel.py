@@ -6,7 +6,7 @@ from queue import Queue
 from bs4 import BeautifulSoup as bs
 from urllib.parse import urljoin, urlparse
 
-from index import Index
+from custom_index import Index
 
 
 class Crawler:
@@ -33,8 +33,10 @@ class Crawler:
 
         if response.status_code == 200 and "text/html" in response.headers["Content-Type"]:
             soup = bs(response.text, 'html.parser')
-            text = soup.get_text()
-            self.index.add_to_cache(text, url)
+            title = soup.title.string if soup.title else ''
+            first_paragraph = soup.find('p').get_text()[:100] + "..." if soup.find('p') else ''
+            text = soup.get_text() if soup.get_text() else ''
+            self.index.add_to_cache(title, first_paragraph, text, url)
 
             for link in soup.find_all('a'):
                 new_url = link.get('href')
