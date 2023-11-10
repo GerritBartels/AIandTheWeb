@@ -1,0 +1,111 @@
+/* Color scheme */
+:root {
+  --background-color: #232325;
+  --text-color: #f2ede7;
+}
+
+/* Global styles */
+body {
+  font-family: Montserrat, sans-serif;
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+footer {
+  position: fixed;
+  margin-top: 20px;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* Header styles */
+h1	{
+  color: var(--text-color);
+  text-align: center;
+  font-size: 40px;
+  margin-bottom: 70px;
+  margin-top: 50px;
+}
+
+/* Search form styles */
+form {
+  margin: 20px auto;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+input[type="text"] {
+  padding: 10px;
+  font-size: 18px;
+  font-family: Montserrat, sans-serif;
+  border: none;
+  border-radius: 5px 0 0 5px;
+  height: 28px;
+  width: 70%;
+  color: var(--background-color);
+  background-color: var(--text-color);
+}
+
+input[type="text"]:focus {
+  outline: none;
+}
+
+button[type="submit"] {
+  padding: 10px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 0 5px 5px 0;
+  height: 48px;
+  background-color: #333333;
+  
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #444444; /* Change color on hover */
+}
+
+/* Search icon */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  color: var(--text-color);
+}
+
+.additional_info p {
+  font-size: 11px;
+  color: #7b7b7b;
+  text-align: center;
+
+}
+
+/* Search results styles */
+.result {
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+.result h2 {
+  font-size: 240px;
+  margin-bottom: 200px;
+}
+
+.result p {
+  font-size: 14px;
+  margin-bottom: 40px;
+}
+
+.result a {
+  font-size: 18px;
+  margin-bottom: 0px;
+  color: #61c5c7;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.result a:hover {
+  text-decoration: underline;
+}

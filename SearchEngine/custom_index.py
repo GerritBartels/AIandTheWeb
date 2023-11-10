@@ -1,21 +1,29 @@
+import os
 import nltk
+import pickle
 import itertools
 from nltk import word_tokenize
 from collections import Counter
 from nltk.corpus import stopwords
-
-import icecream as ic
 
 nltk.download('stopwords')
 
 
 class Index():
 
-    def __init__(self):
+    def __init__(self, load_from_file=False, file_name="custom_index"):
 
         self.cache = []
         self.index = {}
         self.stop_words = set(stopwords.words('english'))
+        self.file_name = file_name
+
+        if load_from_file:
+            with open(f"SearchEngine/index/{self.file_name}.pickle", "rb") as file:
+                self.index = pickle.load(file)
+        else:
+            if not os.path.exists("SearchEngine/index"):
+                os.mkdir("SearchEngine/index")
 
     def _preprocess(self, text):
 
@@ -38,6 +46,9 @@ class Index():
                     self.index[word] = []
 
                 self.index[word].append((url, count, first_paragraph, title))
+
+        with open(f"SearchEngine/index/{self.file_name}.pickle", "wb") as file:
+            pickle.dump(self.index, file)
 
     def search(self, query):
 

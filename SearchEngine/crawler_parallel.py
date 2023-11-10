@@ -34,7 +34,7 @@ class Crawler:
         if response.status_code == 200 and "text/html" in response.headers["Content-Type"]:
             soup = bs(response.text, 'html.parser')
             title = soup.title.string if soup.title else ''
-            first_paragraph = soup.find('p').get_text()[:100] + "..." if soup.find('p') else ''
+            first_paragraph = soup.find('p').get_text()[:200] + "..." if soup.find('p') else ''
             text = soup.get_text() if soup.get_text() else ''
             self.index.add_to_cache(title, first_paragraph, text, url)
 
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     webcrawler.start_crawling(num_threads)
 
     index.build_index()
-    search_results = index.search('unicorn platypus')
+    search_results = index.search('platypus')
 
     ic.ic(search_results)
     elapsed_time = round(time.time() - start_time, 4)

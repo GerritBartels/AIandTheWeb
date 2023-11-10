@@ -2,13 +2,23 @@
 <html>
   <head>
     <title>AllWIx - Yeah Buddy</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="static\css\styles.css">
   </head>
   <body>
     <h1>Allmighty Web Index - AllWIx</h1>
     <form action="/search" method="GET">
       <input type="text" name="q" value="{{ query }}" placeholder="Search...">
-      <button type="submit">Search</button>
+      <button type="submit">
+        <span class="material-symbols-outlined">
+          Search
+        </span>
+      </button>
     </form>
+    <div class="additional_info">
+        <p>Found {{ additional_info["number_of_results"] }} results in {{ additional_info["search_time"] }} seconds</p>
+    </div>
 
     <br><br><br><br>
 
@@ -20,5 +30,8 @@
     {% endfor %}
 
   </body>
+  <footer>
+    <p>© AllWIx AI Inc, 2023</p>
+  </footer>
 </html>
 
