@@ -1,6 +1,8 @@
 import time
 import requests
+import threading
 import icecream as ic
+from queue import Queue
 from typing import Union
 from bs4 import BeautifulSoup as bs
 from urllib.parse import urljoin, urlparse
@@ -9,8 +11,8 @@ from custom_index import Index
 from whoosh_index import WhooshIndex
 
 
-class Crawler:
-    """Crawler class for crawling a website and adding its contents to an index."""
+class ParallelCrawler:
+    """Crawler class for crawling a website and adding its contents to an index. This version uses multithreading."""
 
     def __init__(self, start_url: str, index: Union[Index, WhooshIndex]) -> None:
         """Initialize the Crawler.
@@ -19,27 +21,27 @@ class Crawler:
             start_url (str): The url of the website to crawl.
             index (Union[Index, WhooshIndex]): The index to add the crawled contents to.
         """
-
         self.start_url = start_url
-        self.base_netloc = urlparse(
-            self.start_url
-        ).netloc  # Crawler only crawls pages from the base netloc domain
-        self.url_stack = [self.start_url]
-        self.visited: list[str] = []
+        self.base_netloc = urlparse(start_url).netloc
+        self.visited: set[str] = set()
+        self.url_queue: Queue[str] = Queue()
+        self.url_queue.put(start_url)
         self.session = requests.Session()
+        self.lock = threading.Lock()
         self.index = index
 
-    def crawl(self) -> None:
+    def _crawl(self) -> None:
         """Crawl the website and add its contents to the index, if the website hasn't been visited yet.
         It gathers all links on the website and adds them to the url stack.
         """
 
-        url = self.url_stack.pop()
+        url = self.url_queue.get()
 
-        if url in self.visited:
-            return
-
-        self.visited.append(url)
+        # Check if the url has already been visited in a thread-safe manner
+        with self.lock:
+            if url in self.visited:
+                return
+            self.visited.add(url)
 
         response = self.session.get(url)
 
@@ -47,7 +49,7 @@ class Crawler:
         if (
             response.status_code == 200
             and "text/html" in response.headers["Content-Type"]
-        ):  # evtl 300 codes
+        ):
             soup = bs(response.text, "html.parser")
 
             title = soup.title.string if soup.title else ""
@@ -65,22 +67,39 @@ class Crawler:
                 complete_new_url = urljoin(self.start_url, new_url)
 
                 if urlparse(complete_new_url).netloc != self.base_netloc:
-                    return
+                    continue
 
-                self.url_stack.append(complete_new_url)
-                self.crawl()
+                self.url_queue.put(complete_new_url)
 
-        else:
-            return
+    def start_crawling(self, num_threads: int = 1) -> None:
+        """Start crawling the website with the specified number of threads.
+        As long as there are urls in the url queue, each thread will crawl a url.
+        """
+
+        threads = []
+
+        while not self.url_queue.empty():
+            for _ in range(num_threads):
+                if self.url_queue.empty():
+                    break
+                thread = threading.Thread(target=self._crawl)
+                threads.append(thread)
+                thread.start()
+
+            # Wait for all threads to finish before starting the next batch
+            for thread in threads:
+                thread.join()
+            threads = []
 
 
 if __name__ == "__main__":
     start_time = time.time()
     start_url = "https://vm009.rz.uos.de/crawl/index.html"
+    num_threads = 1
     index = Index()
 
-    webcrawler = Crawler(start_url, index)
-    webcrawler.crawl()
+    webcrawler = ParallelCrawler(start_url, index)
+    webcrawler.start_crawling(num_threads)
 
     index.build_index()
     search_results = index.search("platypus")

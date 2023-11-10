@@ -2,7 +2,8 @@ from time import perf_counter
 from flask import Flask, request, render_template, redirect
 
 from custom_index import Index
-from crawler_parallel import Crawler
+from crawler import Crawler
+from parallel_crawler import ParallelCrawler
 
 
 app = Flask(__name__)
@@ -34,7 +35,7 @@ if __name__ == "__main__":
     start_url = 'https://vm009.rz.uos.de/crawl/index.html'
     num_threads = 1
 
-    #webcrawler = Crawler(start_url, index)
+    #webcrawler = ParallelCrawler(start_url, index)
     #webcrawler.start_crawling(num_threads)
 
     #index.build_index()

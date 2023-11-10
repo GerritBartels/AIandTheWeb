@@ -2,3 +2,4 @@ nltk
 requests
 beautifulsoup4
 whoosh
+icecream
