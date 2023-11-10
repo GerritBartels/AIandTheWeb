@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="static\css\styles.css">
   </head>
   <body>
-    <h1>Allmighty Web Index - AllWIx</h1>
+    <a href="/" class="no-underline">
+      <h1>Allmighty Web Index - AllWIx</h1>
+    </a> 
     <form action="/search" method="GET">
       <input type="text" name="q" value="{{ query }}" placeholder="Search...">
       <button type="submit">
@@ -16,12 +18,16 @@
         </span>
       </button>
     </form>
+    
+    <!-- Search stats -->
     <div class="additional_info">
         <p>Found {{ additional_info["number_of_results"] }} results in {{ additional_info["search_time"] }} seconds</p>
     </div>
 
     <br><br><br><br>
 
+    <!-- Display search results with titles as links and
+    the preview text as paragraph below -->
     {% for result in search_results %}
     <div class="result">
         <a href="{{ result[0] }}">{{ result[3] }}</a>

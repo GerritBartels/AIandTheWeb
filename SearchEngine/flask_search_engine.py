@@ -1,22 +1,31 @@
 from time import perf_counter
 from flask import Flask, request, render_template, redirect
 
-from custom_index import Index
+from custom_index import CustomIndex
+from whoosh_index import WhooshIndex
+
 from crawler import Crawler
 from parallel_crawler import ParallelCrawler
 
 
 app = Flask(__name__)
-index = Index(load_from_file=True)
+index = CustomIndex(load_from_file=False)
+
 
 @app.route("/")
 def start():
-    return render_template('start.html')
+    """Renders the start page of the search engine."""
+
+    return render_template("start.html")
+
 
 @app.route("/search")
 def process_query():
-    query = request.args.get('q')
+    """Renders the search results page of the search engine."""
 
+    query = request.args.get("q")
+
+    # If no query is given, redirect to start page
     if not query:
         return redirect("/")
 
@@ -25,19 +34,26 @@ def process_query():
     number_of_results = len(search_results)
     search_time = round(perf_counter() - start_time, 6)
 
-    additional_info = {'number_of_results': number_of_results, 'search_time': search_time}
+    additional_info = {
+        "number_of_results": number_of_results,
+        "search_time": search_time,
+    }
 
-    return render_template('search_results.html', search_results=search_results, query=query, additional_info=additional_info)
+    return render_template(
+        "search_results.html",
+        search_results=search_results,
+        query=query,
+        additional_info=additional_info,
+    )
 
 
 if __name__ == "__main__":
+    START_URL = "https://www.optikmeyer.de/"
+    NUM_THREADS = 12
 
-    start_url = 'https://vm009.rz.uos.de/crawl/index.html'
-    num_threads = 1
+    webcrawler = ParallelCrawler(START_URL, index)
+    webcrawler.start_crawling(NUM_THREADS)
 
-    #webcrawler = ParallelCrawler(start_url, index)
-    #webcrawler.start_crawling(num_threads)
+    index.build_index()
 
-    #index.build_index()
-    
     app.run(debug=True)

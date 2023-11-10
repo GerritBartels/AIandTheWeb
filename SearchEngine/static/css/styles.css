@@ -11,6 +11,7 @@ body {
   background-color: var(--background-color);
 }
 
+/* Footer styles */
 footer {
   position: fixed;
   margin-top: 20px;
@@ -27,6 +28,10 @@ h1	{
   font-size: 40px;
   margin-bottom: 70px;
   margin-top: 50px;
+}
+
+.no-underline {
+  text-decoration: none;
 }
 
 /* Search form styles */
@@ -65,8 +70,9 @@ button[type="submit"] {
   cursor: pointer;
 }
 
+/* Change color on hover */
 button[type="submit"]:hover {
-  background-color: #444444; /* Change color on hover */
+  background-color: #444444; 
 }
 
 /* Search icon */
@@ -75,6 +81,7 @@ button[type="submit"]:hover {
   color: var(--text-color);
 }
 
+/* Search stats styles */
 .additional_info p {
   font-size: 11px;
   color: #7b7b7b;

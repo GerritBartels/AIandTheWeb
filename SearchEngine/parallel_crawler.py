@@ -7,14 +7,14 @@ from typing import Union
 from bs4 import BeautifulSoup as bs
 from urllib.parse import urljoin, urlparse
 
-from custom_index import Index
+from custom_index import CustomIndex
 from whoosh_index import WhooshIndex
 
 
 class ParallelCrawler:
     """Crawler class for crawling a website and adding its contents to an index. This version uses multithreading."""
 
-    def __init__(self, start_url: str, index: Union[Index, WhooshIndex]) -> None:
+    def __init__(self, start_url: str, index: Union[CustomIndex, WhooshIndex]) -> None:
         """Initialize the Crawler.
 
         Arguments:
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     start_time = time.time()
     start_url = "https://vm009.rz.uos.de/crawl/index.html"
     num_threads = 1
-    index = Index()
+    index = CustomIndex()
 
     webcrawler = ParallelCrawler(start_url, index)
     webcrawler.start_crawling(num_threads)

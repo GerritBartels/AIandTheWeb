@@ -9,7 +9,7 @@ from nltk.corpus import stopwords
 nltk.download("stopwords")
 
 
-class Index:
+class CustomIndex:
     """Class for building and searching an inverted index."""
 
     def __init__(
