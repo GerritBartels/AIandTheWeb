@@ -34,6 +34,14 @@ h1	{
   text-decoration: none;
 }
 
+/* Logo styles */
+.logo {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 15%; /* Adjust this value to scale your image */
+}
+
 /* Search form styles */
 form {
   margin: 20px auto;

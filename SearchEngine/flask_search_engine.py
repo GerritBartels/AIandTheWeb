@@ -48,8 +48,8 @@ def process_query():
 
 
 if __name__ == "__main__":
-    START_URL = "https://www.optikmeyer.de/"
-    NUM_THREADS = 12
+    START_URL = "https://vm009.rz.uos.de/crawl/index.html"
+    NUM_THREADS = 1
 
     webcrawler = ParallelCrawler(START_URL, index)
     webcrawler.start_crawling(NUM_THREADS)
