@@ -108,8 +108,16 @@ button[type="submit"]:hover {
   margin-bottom: 200px;
 }
 
-.result p {
+.result_url {
+  font-size: 12px;
+  margin-top: 5px;
+  margin-bottom: 0px;
+  color: #7a7777;
+}
+
+.result_preview {
   font-size: 14px;
+  margin-top: 15px;
   margin-bottom: 40px;
 }
 

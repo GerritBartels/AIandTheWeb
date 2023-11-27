@@ -4,11 +4,11 @@
     <title>AllWIx - Yeah Buddy</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link rel="stylesheet" href="static\css\styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css')}}">
   </head>
   <body>
     <a href="/" class="no-underline">
-      <img src="static\img\logo2.png" alt="Allmighty Web Index Logo" class="logo">
+      <img src="{{ url_for('static', filename='img/logo.png')}}" alt="Allmighty Web Index Logo" class="logo">
     </a> 
     <form action="/search" method="GET">
       <input type="text" name="q" value="{{ query }}" placeholder="Search...">
@@ -31,7 +31,8 @@
     {% for result in search_results %}
     <div class="result">
         <a href="{{ result[0] }}">{{ result[3] }}</a>
-        <p>{{ result[2] }}</p>
+        <p class="result_url">{{ result[0] }}</p>
+        <p class="result_preview">{{ result[2] }}</p>
     </div>
     {% endfor %}
 
