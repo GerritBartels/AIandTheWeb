@@ -1,8 +1,10 @@
 import os
 
-from whoosh.qparser import QueryParser
+from whoosh.qparser import QueryParser, OrGroup
+from whoosh.writing import BufferedWriter
 from whoosh.fields import TEXT, ID, Schema
 from whoosh.index import create_in, open_dir
+from whoosh.highlight import SentenceFragmenter, HtmlFormatter
 
 
 class WhooshIndex:
@@ -22,9 +24,12 @@ class WhooshIndex:
         self.schema = Schema(
             title=TEXT(stored=True),
             first_paragraph=TEXT(stored=True),
-            content=TEXT(),
+            content=TEXT(stored=True),
             url=ID(stored=True),
         )
+
+        self.search_fragmenter = SentenceFragmenter(charlimit=250)
+        self.highlight_formatter = HtmlFormatter(classname="change")
 
         if load_from_file:
             self.index = open_dir(dirname="SearchEngine/index", indexname=file_name)
@@ -36,7 +41,7 @@ class WhooshIndex:
             self.index = create_in(
                 dirname="SearchEngine/index", schema=self.schema, indexname=file_name
             )
-            self.writer = self.index.writer()
+            self.writer = BufferedWriter(self.index, period=2, limit=2)
 
     def add_to_cache(
         self, title: str, first_paragraph: str, text: str, url: str
@@ -46,10 +51,10 @@ class WhooshIndex:
         Arguments:
             title (str): The title of the page.
             first_paragraph (str): The first paragraph of the page.
-            text (str): The enitire text of the page used to obtain the word frequencies.
+            text (str): The entire text of the page used to obtain the word frequencies.
             url (str): The URL of the page.
         """
-
+        
         self.writer.add_document(
             title=title, first_paragraph=first_paragraph, content=text, url=url
         )
@@ -58,6 +63,7 @@ class WhooshIndex:
         """Build the index and save it to a file."""
 
         self.writer.commit()
+        self.writer.close()
 
     def search(self, query: str) -> list[tuple[str, int, str, str]]:
         """Search the index for the query.
@@ -70,17 +76,21 @@ class WhooshIndex:
                 dummy count, first paragraph, and title of the pages that match the query.
         """
 
-        result = []
+        result = [[],[]]
         # Dummy count is needed for compatibility with the custom index.
         dummy_count = 0
 
         with self.index.searcher() as searcher:
-            parsed_query = QueryParser("content", self.index.schema).parse(query)
-            results = searcher.search(parsed_query)
+            parsed_query = searcher.correct_query(QueryParser("content", self.index.schema, group=OrGroup.factory(0.9)).parse(query), query)
+            results = searcher.search(parsed_query.query)
+            results.fragmenter = self.search_fragmenter
+
+            if parsed_query.string != query:
+                result[0] = (parsed_query.format_string(self.highlight_formatter), parsed_query.string)
 
             for hit in results:
-                result.append(
-                    (hit["url"], dummy_count, hit["first_paragraph"], hit["title"])
+                result[1].append(
+                    (hit["url"], dummy_count, hit.highlights("content"), hit["title"])
                 )
 
         return result

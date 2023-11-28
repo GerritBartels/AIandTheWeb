@@ -9,8 +9,6 @@ from parallel_crawler import ParallelCrawler
 
 
 app = Flask(__name__)
-index = CustomIndex(load_from_file=False)
-
 
 @app.route("/")
 def start():
@@ -31,7 +29,7 @@ def search():
 
     start_time = perf_counter()
     search_results = index.search(query)
-    number_of_results = len(search_results)
+    number_of_results = len(search_results[1])
     search_time = round(perf_counter() - start_time, 6)
 
     additional_info = {
@@ -47,13 +45,21 @@ def search():
     )
 
 
-if __name__ == "__main__":
-    START_URL = "https://vm009.rz.uos.de/crawl/index.html"
-    NUM_THREADS = 1
+START_URL = "https://vm009.rz.uos.de/crawl/index.html"
+INDEX_FILE_NAME = "whoosh_vm009"
+LOAD_INDEX_FROM_FILE = False
+
+NUM_THREADS = 4
+DEBUG = False
+
+
+index = WhooshIndex(load_from_file=LOAD_INDEX_FROM_FILE, file_name=INDEX_FILE_NAME)
+
+if not LOAD_INDEX_FROM_FILE:
 
     webcrawler = ParallelCrawler(START_URL, index)
     webcrawler.start_crawling(NUM_THREADS)
 
     index.build_index()
 
-    app.run(debug=True)
+app.run(debug=DEBUG)

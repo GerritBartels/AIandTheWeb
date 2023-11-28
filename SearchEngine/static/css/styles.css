@@ -111,6 +111,23 @@ button[type="submit"]:hover {
 
 }
 
+/* Spelling correction styles */
+.spelling_correction {
+  font-size: 16px;
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+.spelling_correction a{
+  margin-bottom: 0px;
+  color: #61c5c7;
+  text-decoration: none;
+}
+
+.spelling_correction a:hover {
+  text-decoration: underline;
+}
+
 /* Search results styles */
 .result {
   margin: 20px auto;

@@ -59,7 +59,7 @@ class ParallelCrawler:
             )
             text = soup.get_text() if soup.get_text() else ""
 
-            self.index.add_to_cache(title, first_paragraph, text, url)
+            self.index.add_to_cache(str(title), str(first_paragraph), str(text), str(url))
 
             # Gather all available links on the website
             for link in soup.find_all("a"):

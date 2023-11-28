@@ -29,15 +29,22 @@
         <p>Found {{ additional_info["number_of_results"] }} results in {{ additional_info["search_time"] }} seconds</p>
     </div>
 
-    <br><br><br><br>
+    <br><br>
+
+    <!-- If query needed spelling correction -->
+    {% if search_results[0] %}
+    <p class="spelling_correction">Did you mean <a href="{{ url_for('search', q=search_results[0][1]) }}">{{ search_results[0][0]|safe }}</a>?</p>
+    {% endif %}
+
+    <br><br>
 
     <!-- Display search results with titles as links and
     the preview text as paragraph below -->
-    {% for result in search_results %}
+    {% for result in search_results[1] %}
     <div class="result">
         <a href="{{ result[0] }}">{{ result[3] }}</a>
         <p class="result_url">{{ result[0] }}</p>
-        <p class="result_preview">{{ result[2] }}</p>
+        <p class="result_preview">{{ result[2]|safe }}...</p>   
     </div>
     {% endfor %}
 
