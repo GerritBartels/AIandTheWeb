@@ -57,7 +57,9 @@ class Crawler:
             )
             text = soup.get_text() if soup.get_text() else ""
 
-            self.index.add_to_cache(str(title), str(first_paragraph), str(text), str(url))
+            self.index.add_to_cache(
+                str(title), str(first_paragraph), str(text), str(url)
+            )
 
             # Gather all available links on the website
             for link in soup.find_all("a"):
@@ -72,19 +74,3 @@ class Crawler:
 
         else:
             return
-
-
-if __name__ == "__main__":
-    start_time = time.time()
-    start_url = "https://vm009.rz.uos.de/crawl/index.html"
-    index = CustomIndex()
-
-    webcrawler = Crawler(start_url, index)
-    webcrawler.crawl()
-
-    index.build_index()
-    search_results = index.search("platypus")
-
-    ic.ic(search_results)
-    elapsed_time = round(time.time() - start_time, 4)
-    print(f"Elapsed time: {elapsed_time} seconds")

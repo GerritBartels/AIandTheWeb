@@ -35,7 +35,7 @@ class CustomIndex:
                 os.mkdir("SearchEngine/index")
 
     def _preprocess(self, text: str) -> list[str]:
-        """Preprocess the text by tokenizing it, removing stop words, 
+        """Preprocess the text by tokenizing it, removing stop words,
         and removing non-alphanumeric characters.
 
         Arguments:

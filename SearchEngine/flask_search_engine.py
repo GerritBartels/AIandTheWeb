@@ -10,6 +10,7 @@ from parallel_crawler import ParallelCrawler
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def start():
     """Renders the start page of the search engine."""
@@ -56,7 +57,6 @@ DEBUG = False
 index = WhooshIndex(load_from_file=LOAD_INDEX_FROM_FILE, file_name=INDEX_FILE_NAME)
 
 if not LOAD_INDEX_FROM_FILE:
-
     webcrawler = ParallelCrawler(START_URL, index)
     webcrawler.start_crawling(NUM_THREADS)
 

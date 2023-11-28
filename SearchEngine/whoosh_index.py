@@ -54,7 +54,7 @@ class WhooshIndex:
             text (str): The entire text of the page used to obtain the word frequencies.
             url (str): The URL of the page.
         """
-        
+
         self.writer.add_document(
             title=title, first_paragraph=first_paragraph, content=text, url=url
         )
@@ -72,21 +72,29 @@ class WhooshIndex:
             query (str): The query to search for.
 
         Returns:
-            result: (list[tuple[str, int, str, str]]): A list of tuples containing the url, 
+            result: (list[tuple[str, int, str, str]]): A list of tuples containing the url,
                 dummy count, first paragraph, and title of the pages that match the query.
         """
 
-        result = [[],[]]
+        result = [[], []]
         # Dummy count is needed for compatibility with the custom index.
         dummy_count = 0
 
         with self.index.searcher() as searcher:
-            parsed_query = searcher.correct_query(QueryParser("content", self.index.schema, group=OrGroup.factory(0.9)).parse(query), query)
+            parsed_query = searcher.correct_query(
+                QueryParser(
+                    "content", self.index.schema, group=OrGroup.factory(0.9)
+                ).parse(query),
+                query,
+            )
             results = searcher.search(parsed_query.query)
             results.fragmenter = self.search_fragmenter
 
             if parsed_query.string != query:
-                result[0] = (parsed_query.format_string(self.highlight_formatter), parsed_query.string)
+                result[0] = (
+                    parsed_query.format_string(self.highlight_formatter),
+                    parsed_query.string,
+                )
 
             for hit in results:
                 result[1].append(
