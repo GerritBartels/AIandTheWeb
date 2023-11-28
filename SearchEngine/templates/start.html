@@ -2,11 +2,13 @@
 <html>
   <head>
     <title>AllWIx - Yeah Buddy</title>
+    <link rel="icon" type="image/x-icon" 
+          href="{{ url_for('static', filename='img/logo_favicon.png')}}">
     <link rel="stylesheet" 
           href="https://fonts.googleapis.com/css?family=Montserrat">
     <link rel="stylesheet" 
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link rel="stylesheet" 
+    <link rel="stylesheet"
           href="{{ url_for('static', filename='css/styles.css')}}">
     <style>
       .star {
@@ -18,9 +20,9 @@
       }
     </style>
   </head>
-  <body>
-    <img src="{{ url_for('static', filename='img/logo.png')}}" alt="Allmighty Web Index Logo" class="logo">
-    <form action="/search" method="GET">
+  <body class="start-page">
+    <img src="{{ url_for('static', filename='img/logo.png')}}" alt="Allmighty Web Index Logo" class="logo" >
+    <form action="{{ url_for('search') }}" method="GET" id="searchForm">
       <input type="text" name="q" placeholder="Search...">
         
       <button type="submit" class="material-symbols-outlined">
@@ -33,7 +35,10 @@
     <script>
       let stars = [];
 
-      for (let i = 0; i < 100; i++) {
+      let starDensity = 20000; // one star per 20000 square pixels
+      let starCount = Math.floor(window.innerWidth * window.innerHeight / starDensity);
+
+      for (let i = 0; i < starCount; i++) {
         let star = document.createElement('div');
         star.className = 'star';
         let left = Math.random() * window.innerWidth;
@@ -60,10 +65,49 @@
         lastMousePosition = { x: e.clientX, y: e.clientY };
       });
 
+      let prevWidth = window.innerWidth;
+      let prevHeight = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        let newWidth = window.innerWidth;
+        let newHeight = window.innerHeight;
+        let newStarCount = Math.floor((newWidth * newHeight - prevWidth * prevHeight) / starDensity);
+
+        for (let i = 0; i < newStarCount; i++) {
+          let star = document.createElement('div');
+          star.className = 'star';
+          let left, top;
+          if (newWidth > prevWidth) {
+            // if width increased, spawn stars in the new horizontal strip
+            left = Math.random() * (newWidth - prevWidth) + prevWidth;
+            top = Math.random() * newHeight;
+          } else {
+            // if height increased, spawn stars in the new vertical strip
+            left = Math.random() * newWidth;
+            top = Math.random() * (newHeight - prevHeight) + prevHeight;
+          }
+          let vx = (Math.random() - 0.5) * 0.2;
+          let vy = (Math.random() - 0.5) * 0.2;
+          star.style.left = `${left}px`;
+          star.style.top = `${top}px`;
+          stars.push({ element: star, left, top, vx, vy });
+          document.body.appendChild(star);
+        }
+
+        prevWidth = newWidth;
+        prevHeight = newHeight;
+      });
+
       document.querySelector('button[type="submit"]').addEventListener('click', (e) => {
         e.preventDefault(); // prevent the form from being submitted immediately
 
-        let form = e.target.form; // store a reference to the form
+        // Explicitly set an ID on your form
+        let form = document.getElementById('searchForm'); 
+
+        if (!form) {
+          console.error('Form not found.');
+          return;
+        }
 
         let centerX = window.innerWidth / 2;
         let centerY = window.innerHeight / 2;
@@ -72,14 +116,42 @@
           let dx = star.left - centerX;
           let dy = star.top - centerY;
           let distance = Math.sqrt(dx * dx + dy * dy);
-          star.vx = dx / distance * 17;
-          star.vy = dy / distance * 17;
+          star.vx = dx / distance * 14;
+          star.vy = dy / distance * 14;
         });
 
-        // submit the form after 1 second
-        setTimeout(() => {
-          form.submit();
-        }, 1000);
+        function animateStars() {
+          let remainingStars = [];
+
+          stars.forEach(star => {
+            star.left += star.vx;
+            star.top += star.vy;
+            star.element.style.left = `${star.left}px`;
+            star.element.style.top = `${star.top}px`;
+
+            // Update the distance based on star velocity
+            let targetDistance = Math.sqrt((star.left - centerX) ** 2 + (star.top - centerY) ** 2);
+
+            // if the star is outside the window, remove it from the DOM
+            if (targetDistance > Math.max(window.innerWidth, window.innerHeight)) {
+              star.element.remove();
+            } else {
+              remainingStars.push(star);
+            }
+          });
+
+          stars = remainingStars;
+
+          // If there are no stars left, submit the form
+          if (stars.length === 0) {
+            form.submit();
+          } else {
+            requestAnimationFrame(animateStars);
+          }
+        }
+
+        // Start the animation
+        animateStars();
       });
 
       function animate() {
@@ -105,7 +177,7 @@
     </script>
 
   </body>
-  <footer>
+  <footer class="footer-start">
     <p>© Allmighty Web Index Inc, 2023</p>
   </footer>
 </html>

@@ -20,7 +20,7 @@ def start():
 
 
 @app.route("/search")
-def process_query():
+def search():
     """Renders the search results page of the search engine."""
 
     query = request.args.get("q")
