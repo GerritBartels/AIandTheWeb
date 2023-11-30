@@ -1,5 +1,15 @@
+from pathlib import Path
+__location__ = Path(__file__).parent.resolve()
+
+import sys
+sys.path.insert(1, __location__.__str__())
+
+import os
+os.chdir(__location__)
+
+import traceback
 from time import perf_counter
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, url_for
 
 from custom_index import CustomIndex
 from whoosh_index import WhooshIndex
@@ -26,7 +36,7 @@ def search():
 
     # If no query is given, redirect to start page
     if not query:
-        return redirect("/")
+        return redirect(url_for('start'))
 
     start_time = perf_counter()
     search_results = index.search(query)
@@ -47,14 +57,14 @@ def search():
 
 
 START_URL = "https://vm009.rz.uos.de/crawl/index.html"
-INDEX_FILE_NAME = "whoosh_vm009"
+INDEX_DIR_NAME = "whoosh_vm009"
 LOAD_INDEX_FROM_FILE = False
 
 NUM_THREADS = 4
 DEBUG = False
 
 
-index = WhooshIndex(load_from_file=LOAD_INDEX_FROM_FILE, file_name=INDEX_FILE_NAME)
+index = WhooshIndex(load_from_file=LOAD_INDEX_FROM_FILE, dir_name=INDEX_DIR_NAME)
 
 if not LOAD_INDEX_FROM_FILE:
     webcrawler = ParallelCrawler(START_URL, index)

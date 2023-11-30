@@ -59,6 +59,7 @@ class ParallelCrawler:
             )
             text = soup.get_text() if soup.get_text() else ""
 
+            # Convert elements to strings to avoid pickling errors
             self.index.add_to_cache(
                 str(title), str(first_paragraph), str(text), str(url)
             )

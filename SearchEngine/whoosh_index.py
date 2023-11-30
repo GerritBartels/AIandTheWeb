@@ -11,13 +11,13 @@ class WhooshIndex:
     """Class for building and searching an inverted index based on Whoosh."""
 
     def __init__(
-        self, load_from_file: bool = False, file_name: str = "whoosh_index"
+        self, load_from_file: bool = False, dir_name: str = "whoosh_index"
     ) -> None:
         """Initialize the Index.
 
         Arguments:
             load_from_file (bool): Whether to load the index from a file.
-            file_name (str): The name of the file to load the index from and save it to.
+            dir_name (str): The name of the dir to load the index from and save it to.
         """
 
         # Create the schema for the index, which specifies the fields that will be indexed and stored.
@@ -32,14 +32,14 @@ class WhooshIndex:
         self.highlight_formatter = HtmlFormatter(classname="change")
 
         if load_from_file:
-            self.index = open_dir(dirname="SearchEngine/index", indexname=file_name)
+            self.index = open_dir(dirname=f"index/{dir_name}", indexname="index")
 
         else:
-            if not os.path.exists("SearchEngine/index"):
-                os.mkdir("SearchEngine/index")
+            if not os.path.exists(f"index/{dir_name}"):
+                os.makedirs(f"index/{dir_name}")
 
             self.index = create_in(
-                dirname="SearchEngine/index", schema=self.schema, indexname=file_name
+                dirname=f"index/{dir_name}", schema=self.schema, indexname="index"
             )
             self.writer = BufferedWriter(self.index, period=2, limit=2)
 
@@ -66,7 +66,8 @@ class WhooshIndex:
         self.writer.close()
 
     def search(self, query: str) -> list[tuple[str, int, str, str]]:
-        """Search the index for the query.
+        """Search the index for the query. If the query is misspelled, the corrected query is returned as well.
+        The queried words are highlighted in the results.
 
         Arguments:
             query (str): The query to search for.

@@ -13,26 +13,26 @@ class CustomIndex:
     """Class for building and searching an inverted index."""
 
     def __init__(
-        self, load_from_file: bool = False, file_name: str = "custom_index"
+        self, load_from_file: bool = False, dir_name: str = "custom_index"
     ) -> None:
         """Initialize the Index.
 
         Arguments:
             load_from_file (bool): Whether to load the index from a file.
-            file_name (str): The name of the file to load the index from and save it to.
+            dir_name (str): The name of the dir to load the index from and save it to.
         """
 
         self.cache: list[tuple] = []
         self.index = {}
         self.stop_words = set(stopwords.words("english"))
-        self.file_name = file_name
+        self.dir_name = dir_name
 
         if load_from_file:
-            with open(f"SearchEngine/index/{self.file_name}.pickle", "rb") as file:
+            with open(f"index/{self.dir_name}.pickle", "rb") as file:
                 self.index = pickle.load(file)
         else:
-            if not os.path.exists("SearchEngine/index"):
-                os.mkdir("SearchEngine/index")
+            if not os.path.exists(f"index/{self.dir_name}"):
+                os.makedirs(f"index/{self.dir_name}")
 
     def _preprocess(self, text: str) -> list[str]:
         """Preprocess the text by tokenizing it, removing stop words,
@@ -81,7 +81,7 @@ class CustomIndex:
 
                 self.index[word].append((url, count, first_paragraph, title))
 
-        with open(f"SearchEngine/index/{self.file_name}.pickle", "wb") as file:
+        with open(f"index/{self.dir_name}/index.pickle", "wb") as file:
             pickle.dump(self.index, file)
 
     def search(self, query: str) -> list[tuple[str, int, str, str]]:
@@ -108,7 +108,9 @@ class CustomIndex:
         grouped_data = itertools.groupby(search_hits, key=lambda x: x[0])
 
         # Create result list with URL, sum of counts, and sets of first_paragraph and title
-        result = []
+        # For compatibility with the WhooshIndex, the first list is empty 
+        # instead of containing the corrected query
+        result = [[], []]
         for url, group in grouped_data:
             group_list = list(group)
             total_count = sum(item[1] for item in group_list)
@@ -116,9 +118,9 @@ class CustomIndex:
                 iter({item[2] for item in group_list}), "Preview unavailable"
             )
             title = next(iter({item[3] for item in group_list}), "Untitled")
-            result.append((url, total_count, first_paragraph, title))
+            result[1].append((url, total_count, first_paragraph, title))
 
         # Sort the result by count
-        result.sort(key=lambda x: x[1], reverse=True)
+        result[1].sort(key=lambda x: x[1], reverse=True)
 
         return result
