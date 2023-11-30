@@ -2,6 +2,10 @@
 
 This project is a simple search engine built with Flask, Whoosh or a custom index, and a custom web crawler.
 
+## Showcase
+
+![SearchEngineShowcase](https://github.com/GerritBartels/AIandTheWeb/assets/64156238/952c1e69-4d9a-4234-993f-16e557dafd26)
+
 ## Features
 
 - **Web Crawling**: The search engine uses a custom-built web crawler to fetch and index web pages. The crawler can be run in parallel using multiple threads for increased performance.
