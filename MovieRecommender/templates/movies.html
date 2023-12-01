@@ -1,0 +1,27 @@
+{% extends "flask_user_layout.html" %}
+{% block content %}
+<div class="container">
+    <h2>Movies</h2>
+
+    {% for m in movies %}
+        <div class="panel panel-default">
+            <div class="panel-heading"><b>{{ m.title }}</b></div>
+            <div class="panel-body">
+                <p>
+                    {% for g in m.genres %}
+                        <span class="label label-default">{{ g.genre }}</span>
+                    {% endfor %}
+                </p>
+            </div>
+              <div class="panel-footer">Rate:
+                  <a href="#" class="card-link">1</a>
+                  <a href="#" class="card-link">2</a>
+                  <a href="#" class="card-link">3</a>
+                  <a href="#" class="card-link">4</a>
+                  <a href="#" class="card-link">5</a> Stars
+              </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
