@@ -1,10 +1,13 @@
 from pathlib import Path
+
 __location__ = Path(__file__).parent.resolve()
 
 import sys
+
 sys.path.insert(1, __location__.__str__())
 
 import os
+
 os.chdir(__location__)
 
 import traceback
@@ -36,7 +39,7 @@ def search():
 
     # If no query is given, redirect to start page
     if not query:
-        return redirect(url_for('start'))
+        return redirect(url_for("start"))
 
     start_time = perf_counter()
     search_results = index.search(query)

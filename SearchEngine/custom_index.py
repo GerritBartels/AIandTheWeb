@@ -84,14 +84,14 @@ class CustomIndex:
         with open(f"index/{self.dir_name}/index.pickle", "wb") as file:
             pickle.dump(self.index, file)
 
-    def search(self, query: str) -> list[tuple[str, int, str, str]]:
+    def search(self, query: str) -> list[list]:
         """Search the index for the query.
 
         Arguments:
             query (str): The query to search for.
 
         Returns:
-            result (list[tuple[str, int, str, str]]): A list of tuples containing the URL, total count,
+            result (list[list]): A list of tuples containing the URL, total count,
                 first paragraph, and title, sort by total count.
         """
 
@@ -108,7 +108,7 @@ class CustomIndex:
         grouped_data = itertools.groupby(search_hits, key=lambda x: x[0])
 
         # Create result list with URL, sum of counts, and sets of first_paragraph and title
-        # For compatibility with the WhooshIndex, the first list is empty 
+        # For compatibility with the WhooshIndex, the first list is empty
         # instead of containing the corrected query
         result = [[], []]
         for url, group in grouped_data:

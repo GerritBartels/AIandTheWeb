@@ -65,7 +65,7 @@ class WhooshIndex:
         self.writer.commit()
         self.writer.close()
 
-    def search(self, query: str) -> list[tuple[str, int, str, str]]:
+    def search(self, query: str) -> list[list]:
         """Search the index for the query. If the query is misspelled, the corrected query is returned as well.
         The queried words are highlighted in the results.
 
@@ -73,8 +73,9 @@ class WhooshIndex:
             query (str): The query to search for.
 
         Returns:
-            result: (list[tuple[str, int, str, str]]): A list of tuples containing the url,
-                dummy count, first paragraph, and title of the pages that match the query.
+            result: (list[list]): A list of two lists. The first contains a corrected version of the query in case
+            of mispelling and the second contains tuples with the url, dummy count, first paragraph, and title of
+            the pages that match the query.
         """
 
         result = [[], []]

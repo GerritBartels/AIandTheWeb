@@ -1,7 +1,5 @@
-import time
 import requests
 import threading
-import icecream as ic
 from queue import Queue
 from typing import Union
 from bs4 import BeautifulSoup as bs
