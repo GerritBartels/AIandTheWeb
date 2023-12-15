@@ -35,29 +35,29 @@ def check_and_read_data(db, user_manager):
 
         print("Finished reading in movies \n")
 
-    # if MovieLinks.query.count() == 0:
+    if MovieLinks.query.count() == 0:
         # read movie links from csv
-    with open('data/links.csv', newline='', encoding='utf8') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        count = 0
-        for row in reader:
-            if count > 0:
-                try:
-                    movie_id = row[0]
-                    imdb_id = row[1]
-                    tmdb_id = row[2]
-                    movie_link = MovieLinks(movie_id=movie_id, imdb_id=imdb_id, tmdb_id=tmdb_id)
-                    db.session.add(movie_link)
-                    db.session.commit()  # save data to database
-                except IntegrityError:
-                    print("Ignoring duplicate movie link: " + movie_id)
-                    db.session.rollback()
-                    pass
-            count += 1
-            if count % 100 == 0:
-                print(count, " movie links read")
+        with open('data/links.csv', newline='', encoding='utf8') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',')
+            count = 0
+            for row in reader:
+                if count > 0:
+                    try:
+                        movie_id = row[0]
+                        imdb_id = row[1]
+                        tmdb_id = row[2]
+                        movie_link = MovieLinks(movie_id=movie_id, imdb_id=imdb_id, tmdb_id=tmdb_id)
+                        db.session.add(movie_link)
+                        db.session.commit()  # save data to database
+                    except IntegrityError:
+                        print("Ignoring duplicate movie link: " + movie_id)
+                        db.session.rollback()
+                        pass
+                count += 1
+                if count % 100 == 0:
+                    print(count, " movie links read")
 
-    print("Finished reading in links \n")
+        print("Finished reading in links \n")
 
     if MovieTags.query.count() == 0:
         # read movie tags from csv
