@@ -1,4 +1,15 @@
 # Contains parts from: https://flask-user.readthedocs.io/en/latest/quickstart_app.html
+from pathlib import Path
+
+__location__ = Path(__file__).parent.resolve()
+
+import sys
+
+sys.path.insert(1, __location__.__str__())
+
+import os
+
+os.chdir(__location__)
 
 from flask import Flask, render_template
 from flask_user import login_required, UserManager
@@ -6,12 +17,21 @@ from flask_user import login_required, UserManager
 from models import db, User, Movie, MovieGenre
 from read_data import check_and_read_data
 
+from sqlalchemy.engine import Engine
+from sqlalchemy import event
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
 # Class-based application configuration
 class ConfigClass(object):
     """ Flask application config """
 
     # Flask settings
-    SECRET_KEY = 'This is an INSECURE secret!! DO NOT use this in production!!'
+    SECRET_KEY = 'TheSecretestKeyToHaveRoamedThisPlanet'
 
     # Flask-SQLAlchemy settings
     SQLALCHEMY_DATABASE_URI = 'sqlite:///movie_recommender.sqlite'  # File-based SQL database
@@ -36,7 +56,7 @@ user_manager = UserManager(app, db, User)  # initialize Flask-User management
 def initdb_command():
     global db
     """Creates the database tables."""
-    check_and_read_data(db)
+    check_and_read_data(db=db, user_manager=user_manager)
     print('Initialized the database.')
 
 # The Home page is accessible to anyone

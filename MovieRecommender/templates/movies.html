@@ -11,6 +11,12 @@
                     {% for g in m.genres %}
                         <span class="label label-default">{{ g.genre }}</span>
                     {% endfor %}
+                    <!-- {% for l in m.links %}
+                        <span class="label label-default">{{ l.imdb_id }}</span>
+                        <span class="label label-default">{{ l.tmdb_id }}</span>
+                    {% endfor %} -->
+                    <span class="label label-default">{{ m.links.imdb_id }}</span>
+                    <span class="label label-default">{{ m.links.tmdb_id }}</span>
                 </p>
             </div>
               <div class="panel-footer">Rate:
