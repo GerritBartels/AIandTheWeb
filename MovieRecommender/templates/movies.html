@@ -14,6 +14,13 @@
                                 <span class="label label-default">{{ g.genre }}</span>
                             {% endfor %}
                         </p>
+                        <p>
+                            {% for tag in movie_tags[m.id] %}
+                                {% if loop.index <= 5 %}
+                                    <span class="label label-info">{{ tag }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </p>
                     </div>
                     <div class="col-md-4 text-right">
                         <div style="margin-bottom: 10px;">

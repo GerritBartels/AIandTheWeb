@@ -20,6 +20,8 @@ from read_data import check_and_read_data
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 
+from collections import Counter
+
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
@@ -70,21 +72,20 @@ def home_page():
 @app.route('/movies')
 @login_required  # User must be authenticated
 def movies_page():
-    # String-based templates
 
     # first 10 movies
-    movies = Movie.query.limit(10).all()
+    movies = Movie.query.limit(20).all()
 
-    # only Romance movies
-    # movies = Movie.query.filter(Movie.genres.any(MovieGenre.genre == 'Romance')).limit(10).all()
+    # get movie tags for each movie, sort them by tag count first and then alphabetically
+    movie_tags = {}
+    for movie in movies:
+        if movie.tags:
+            tag_counts = Counter([tag.tag.lower() for tag in movie.tags])
+            sorted_tags = sorted(tag_counts.items(), key=lambda x: (-x[1], x[0]))
+            sorted_tags = [key.title() for key in dict(sorted_tags).keys()]
+            movie_tags[movie.id] = sorted_tags
 
-    # only Romance AND Horror movies
-    # movies = Movie.query\
-    #     .filter(Movie.genres.any(MovieGenre.genre == 'Romance')) \
-    #     .filter(Movie.genres.any(MovieGenre.genre == 'Horror')) \
-    #     .limit(10).all()
-
-    return render_template("movies.html", movies=movies)
+    return render_template("movies.html", movies=movies, movie_tags=movie_tags)
 
 
 # Start development web server
