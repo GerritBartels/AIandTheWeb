@@ -36,13 +36,16 @@
                     </div>
                 </div>
             </div>
-              <div class="panel-footer">Rate:
-                  <a href="#" class="card-link">1</a>
-                  <a href="#" class="card-link">2</a>
-                  <a href="#" class="card-link">3</a>
-                  <a href="#" class="card-link">4</a>
-                  <a href="#" class="card-link">5</a> Stars
-              </div>
+            <div class="panel-footer">Rate:
+                <form action="/rate_movie" method="post">
+                    <input type="hidden" name="movie_id" value="{{ m.id }}">
+                    <button type="submit" name="rating" value="1">1</button>
+                    <button type="submit" name="rating" value="2">2</button>
+                    <button type="submit" name="rating" value="3">3</button>
+                    <button type="submit" name="rating" value="4">4</button>
+                    <button type="submit" name="rating" value="5">5</button> Stars
+                </form>
+            </div>
         </div>
     {% endfor %}
 </div>

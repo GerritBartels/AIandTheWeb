@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_user import UserMixin
+from sqlalchemy import UniqueConstraint
 
 db = SQLAlchemy()
 
@@ -20,6 +21,7 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(100, collation='NOCASE'), nullable=False, server_default='')
     last_name = db.Column(db.String(100, collation='NOCASE'), nullable=False, server_default='')
     tags = db.relationship('MovieTags', backref='user', lazy=True)
+    ratings = db.relationship('MovieRatings', backref='user', lazy=True)
 
 
 class Movie(db.Model):
@@ -30,6 +32,7 @@ class Movie(db.Model):
     genres = db.relationship('MovieGenre', backref='movie', lazy=True)
     links = db.relationship("MovieLinks", backref="movie", lazy=True)
     tags = db.relationship('MovieTags', backref='movie', lazy=True)
+    ratings = db.relationship('MovieRatings', backref='movie', lazy=True)
 
 
 class MovieGenre(db.Model):
@@ -54,4 +57,17 @@ class MovieTags(db.Model):
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
     tag = db.Column(db.String(255), nullable=False, server_default='')
     timestamp = db.Column(db.DateTime())
+
+    __table_args__ = (UniqueConstraint('user_id', 'movie_id', 'tag', name='user_movie_tag_uc'),)
+
+
+class MovieRatings(db.Model):
+    __tablename__ = "movie_ratings"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
+    rating = db.Column(db.Float, nullable=False)
+    timestamp = db.Column(db.DateTime())
+
+    __table_args__ = (UniqueConstraint('user_id', 'movie_id', name='user_movie_uc'),)
     

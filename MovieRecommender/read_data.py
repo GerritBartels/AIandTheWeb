@@ -1,7 +1,7 @@
 import csv
 import datetime
 from sqlalchemy.exc import IntegrityError
-from models import Movie, MovieGenre, MovieLinks, MovieTags, User
+from models import User, Movie, MovieGenre, MovieLinks, MovieTags, MovieRatings
 
 
 def check_and_read_data(db, user_manager):
@@ -81,7 +81,7 @@ def check_and_read_data(db, user_manager):
                         db.session.add(movie_tag)
                         db.session.commit()  # save data to database
                     except IntegrityError:
-                        print("Integrity error for tag: " + tag)
+                        print("Integrity error for tag: " + tag + " for movie: " + movie_id + " by user: " + user_id)
                         db.session.rollback()
                         pass
                 count += 1
@@ -89,3 +89,35 @@ def check_and_read_data(db, user_manager):
                     print(count, " movie tags read")
 
         print("Finished reading in tags \n")
+
+
+    if MovieRatings.query.count() == 0:
+        # read movie ratings from csv
+        with open('data/ratings.csv', newline='', encoding='utf8') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',')
+            count = 0
+            for row in reader:
+                if count > 0:
+                    try:
+                        user_id = row[0]
+
+                        if User.query.filter_by(id=user_id).count() == 0:
+                            username = f"User{user_id}"
+                            user = User(id=user_id, username=username, password=user_manager.hash_password(username))
+                            db.session.add(user)
+
+                        movie_id = row[1]
+                        rating = row[2]
+                        timestamp = row[3]
+                        movie_rating = MovieRatings(user_id=user_id, movie_id=movie_id, rating=rating, timestamp=datetime.date.fromtimestamp(int(timestamp)))
+                        db.session.add(movie_rating)
+                        db.session.commit()  # save data to database
+                    except IntegrityError:
+                        print("Integrity error for rating: " + rating + " for movie: " + movie_id + " by user: " + user_id)
+                        db.session.rollback()
+                        pass
+                count += 1
+                if count % 1000 == 0:
+                    print(count, " movie ratings read")
+
+        print("Finished reading in ratings \n")
