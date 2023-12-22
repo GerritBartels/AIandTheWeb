@@ -3,6 +3,7 @@ import sys
 import datetime
 import flask_user
 import flask_sqlalchemy
+from collections import Counter
 from sqlalchemy.exc import IntegrityError
 from models import User, Movie, MovieGenre, MovieLinks, MovieTags, MovieRatings
 
@@ -151,3 +152,41 @@ def check_and_read_data(db: flask_sqlalchemy.extension.SQLAlchemy, user_manager:
             db.session.commit()
 
         print("\nFinished reading in ratings \n")
+
+
+def get_movie_metadata(db: flask_sqlalchemy.extension.SQLAlchemy, movies: list, current_user: User, get_user_ratings: bool=True) -> (dict, dict, dict):
+    """Gets movie metadata from the database, i.e., tags, average ratings, and user ratings.
+    
+    Arguments:
+        db (flask_sqlalchemy.extension.SQLAlchemy): The SQLAlchemy database object.
+        movies (list): A list of Movie objects.
+        current_user (User): The current user.
+        get_user_ratings (bool): Whether to get ratings for the current user.
+    """
+
+    movie_tags = {}
+    average_ratings = {}
+    user_ratings = {}
+
+    for movie in movies:
+        # Get movie tags for each movie, sort them by tag count first and then alphabetically
+        if movie.tags:
+            tag_counts = Counter([tag.tag.lower() for tag in movie.tags])
+            sorted_tags = sorted(tag_counts.items(), key=lambda x: (-x[1], x[0]))
+            sorted_tags = [key.title() for key in dict(sorted_tags).keys()]
+            movie_tags[movie.id] = sorted_tags
+        
+        # Get average rating for each movie
+        rating_query = MovieRatings.query.filter_by(movie_id=movie.id)
+
+        if rating_query.count() > 0:
+            average_ratings[movie.id] = (round(rating_query.with_entities(db.func.avg(MovieRatings.rating)).scalar(), 1), rating_query.count())
+
+        if get_user_ratings:
+            # Get rating for each movie by the logged in user
+            user_rating_query = rating_query.filter_by(user_id=current_user.id)
+            
+            if user_rating_query.count() == 1:
+                user_ratings[movie.id] = user_rating_query.first().rating
+
+    return movie_tags, average_ratings, user_ratings

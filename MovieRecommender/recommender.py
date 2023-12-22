@@ -13,6 +13,8 @@ os.chdir(__location__)
 
 import click
 import datetime
+import numpy as np
+import tensorflow as tf
 from collections import Counter
 from werkzeug.wrappers import Response
 
@@ -20,12 +22,15 @@ from flask import Flask, render_template, flash, request, redirect, session
 from flask_user import login_required, UserManager, current_user
 
 from sqlalchemy.engine import Engine
-from sqlalchemy import event
+from sqlalchemy import event, not_
 from sqlalchemy.exc import IntegrityError
 
-from read_data import check_and_read_data
 from models import db, User, Movie, MovieRatings
 from recommender_model import Recommender, train_model
+from utils import check_and_read_data, get_movie_metadata
+
+import sqlite3
+sqlite3.register_adapter(np.int32, lambda val: int(val))
 
 
 @event.listens_for(Engine, "connect")
@@ -87,6 +92,7 @@ if "initdb" not in sys.argv:
                                         num_users=UNIQUE_USERS, 
                                         num_movies=UNIQUE_MOVIES)
         recommender_model.load_weights('weights/recommender_weights')
+        recommender_model.build((None, 2))
         print("Recommender model weights loaded.")
 
 
@@ -179,29 +185,8 @@ def movies() -> str:
     # Display first 20 movies
     movies = Movie.query.limit(20).all()
 
-    movie_tags = {}
-    average_ratings = {}
-    user_ratings = {}
-
-    for movie in movies:
-        # Get movie tags for each movie, sort them by tag count first and then alphabetically
-        if movie.tags:
-            tag_counts = Counter([tag.tag.lower() for tag in movie.tags])
-            sorted_tags = sorted(tag_counts.items(), key=lambda x: (-x[1], x[0]))
-            sorted_tags = [key.title() for key in dict(sorted_tags).keys()]
-            movie_tags[movie.id] = sorted_tags
-        
-        # Get average rating for each movie
-        rating_query = MovieRatings.query.filter_by(movie_id=movie.id)
-
-        if rating_query.count() > 0:
-            average_ratings[movie.id] = (round(rating_query.with_entities(db.func.avg(MovieRatings.rating)).scalar(), 1), rating_query.count())
-
-        # Get rating for each movie by the logged in user
-        user_rating_query = rating_query.filter_by(user_id=current_user.id)
-        
-        if user_rating_query.count() == 1:
-            user_ratings[movie.id] = user_rating_query.first().rating
+    # Get movie tags, average ratings, and user ratings
+    movie_tags, average_ratings, user_ratings = get_movie_metadata(db=db, movies=movies, current_user=current_user)
 
     return render_template("movies.html", movies=movies, movie_tags=movie_tags, average_ratings=average_ratings, user_ratings=user_ratings)
 
@@ -242,6 +227,42 @@ def rate_movie() -> Response:
 
     return redirect(request.referrer)
     
+
+@app.route('/movie_recommender')
+@login_required
+def movie_recommender() -> str:
+    """Renders the movie recommender page. Calls recommender model on 
+    all unseen movies of the logged in user and gets their movie objects + metadata.
+    
+    Returns:
+        str: Rendered movie recommender page.
+    """
+
+    user_id = current_user.id
+
+    # Get all movie IDs that the current user has rated
+    rated_movies = MovieRatings.query.filter_by(user_id=user_id).with_entities(MovieRatings.movie_id)
+    # Get all movies not in rated_movies
+    unrated_movies = Movie.query.filter(not_(Movie.id.in_(rated_movies))).with_entities(Movie.id).all()
+
+    user_id = np.expand_dims(np.asarray([user_id]*len(unrated_movies)), axis=1)
+    unrated_movies = np.asarray(unrated_movies)
+
+    # Get recommendations for the current user
+    data = tf.convert_to_tensor(np.concatenate((user_id, unrated_movies), axis=1))
+    predictions = recommender_model(data, training=False).numpy()
+
+    # Combine movie IDs and predictions into a dictionary and sort by prediction
+    recommendations_dict = dict(zip(unrated_movies.flatten(), predictions.flatten()))
+    recommendations_dict = dict(sorted(recommendations_dict.items(), key=lambda x: x[1], reverse=True))
+
+    # Get the top 20 recommendations, their movie objects and metadata
+    recommendation_ids = list(recommendations_dict.keys())[:20]
+    movie_recommendations = Movie.query.filter(Movie.id.in_(recommendation_ids)).all()
+    movie_tags, average_ratings, _ = get_movie_metadata(db=db, movies=movie_recommendations, current_user=current_user, get_user_ratings=False)
+
+    return render_template("movie_recommender.html", movie_recommendations=movie_recommendations, movie_tags=movie_tags, average_ratings=average_ratings)
+
 
 # Start development web server
 if __name__ == '__main__':
