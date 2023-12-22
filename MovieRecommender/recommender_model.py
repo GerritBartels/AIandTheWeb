@@ -42,10 +42,10 @@ class Recommender(tf.keras.Model):
         self.dropout5 = tf.keras.layers.Dropout(dropout)
         self.batch_norm5 = tf.keras.layers.BatchNormalization()
 
-        self.output_layer = tf.keras.layers.Dense(1)
+        self.output_layer = tf.keras.layers.Dense(1, activation='sigmoid')
 
 
-    def call(self, inputs) -> tf.Tensor:
+    def call(self, inputs, training=True) -> tf.Tensor:
         """Performs forward pass on the model.
 
         Arguments:
@@ -55,29 +55,29 @@ class Recommender(tf.keras.Model):
             output (tf.Tensor): The output tensor containing the predicted ratings.
         """
 
-        user_vector = self.user_embedding(inputs[:, 0])
-        user_vector = self.dense1(user_vector)
-        user_vector = self.dropout1(user_vector)
-        user_vector = self.batch_norm1(user_vector)
+        user_vector = self.user_embedding(inputs[:, 0], training=training)
+        user_vector = self.dense1(user_vector, training=training)
+        user_vector = self.dropout1(user_vector, training=training)
+        user_vector = self.batch_norm1(user_vector, training=training)
 
-        movie_vector = self.movie_embedding(inputs[:, 1]) 
-        movie_vector = self.dense2(movie_vector)
-        movie_vector = self.dropout2(movie_vector)
-        movie_vector = self.batch_norm2(movie_vector)
+        movie_vector = self.movie_embedding(inputs[:, 1], training=training) 
+        movie_vector = self.dense2(movie_vector, training=training)
+        movie_vector = self.dropout2(movie_vector, training=training)
+        movie_vector = self.batch_norm2(movie_vector, training=training)
 
-        x = self.dense3(tf.concat([user_vector, movie_vector], axis=1))
-        x = self.dropout3(x)
-        x = self.batch_norm3(x)
+        x = self.dense3(tf.concat([user_vector, movie_vector], axis=1), training=training)
+        x = self.dropout3(x, training=training)
+        x = self.batch_norm3(x, training=training)
 
-        x = self.dense4(x)
-        x = self.dropout4(x)
-        x = self.batch_norm4(x)
+        x = self.dense4(x, training=training)
+        x = self.dropout4(x, training=training)
+        x = self.batch_norm4(x, training=training)
 
-        x = self.dense5(x)
-        x = self.dropout5(x)
-        x = self.batch_norm5(x)
+        x = self.dense5(x, training=training)
+        x = self.dropout5(x, training=training)
+        x = self.batch_norm5(x, training=training)
 
-        output = self.output_layer(x)
+        output = self.output_layer(x, training=training)
 
         return output
 
@@ -104,7 +104,7 @@ def build_dataset(split: float) -> (tf.data.Dataset, tf.data.Dataset, list, list
 
     for row in movie_ratings:
         input_data.append([row.user_id, row.movie_id])
-        target_data.append(row.rating)
+        target_data.append(row.rating/5)
         
     train_data = tf.data.Dataset.from_tensor_slices((input_data[:int(len(input_data)*split)], target_data[:int(len(input_data)*split)]))
     test_data = tf.data.Dataset.from_tensor_slices((input_data[int(len(input_data)*split):], target_data[int(len(input_data)*split):]))
