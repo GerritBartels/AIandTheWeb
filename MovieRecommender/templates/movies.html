@@ -5,7 +5,12 @@
 
     {% for m in movies %}
     <div class="panel panel-default">
-        <div class="panel-heading"><b>{{ m.title }}</b></div>
+        <div class="panel-heading"><b>{{ m.title }}</b>
+            <span class="rating">
+                <i class="fa fa-star" aria-hidden="true"></i>
+                <b>{{ average_ratings[m.id][0] }}/5</b> ({{ average_ratings[m.id][1] }} votes)
+            </span>
+        </div>
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-8">
@@ -36,18 +41,114 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-footer">Rate:
-                <form action="/rate_movie" method="post">
+            <div class="panel-footer">
+                <form action="/rate_movie" method="post" id="form{{ m.id }}">
                     <input type="hidden" name="movie_id" value="{{ m.id }}">
-                    <button type="submit" name="rating" value="1">1</button>
-                    <button type="submit" name="rating" value="2">2</button>
-                    <button type="submit" name="rating" value="3">3</button>
-                    <button type="submit" name="rating" value="4">4</button>
-                    <button type="submit" name="rating" value="5">5</button> Stars
+                    <fieldset class="rate">
+                        {% for i in [5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5] %}
+                            <input type="submit" id="rating{{ i*2 }}-{{ m.id }}" name="rating" value="{{ i }}" form="form{{ m.id }}"
+                            {% if user_ratings[m.id] == i %}class="rated"{% endif %}/>
+                            <label {% if i != i|round(0) %}class="half"{% endif %} for="rating{{ i*2 }}-{{ m.id }}" title="{{ i }} stars"></label>
+                        {% endfor %}
+                    </fieldset> 
                 </form>
             </div>
+            {% with messages = get_flashed_messages(category_filter=[m.id]) %}
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
         </div>
     {% endfor %}
-</div>
 
+    <style>
+        /* Base setup */
+        @import url(//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css);
+        body {
+            margin: 5%; 
+            color: #333; 
+        }
+
+        .rating {
+            float: right;
+        }
+
+        .panel-heading{
+            font-size: 16px;
+        }
+
+        .fa-star {
+            color: #f9c10b;
+            font-size: 2rem;
+        }
+
+        /* Ratings widget */
+        .rate {
+            display: inline-block;
+            border: 0;
+        }
+        /* Hide radio */
+        .rate > input {
+            display: none;
+        }
+        /* Order correctly by floating highest to the right */
+        .rate > label {
+            float: right;
+        }
+        /* The star of the show */
+        .rate > label:before {
+            display: inline-block;
+            font-size: 3rem;
+            padding: .0rem .5rem;
+            padding-top: 8px;
+            margin: 0;
+            cursor: pointer;
+            font-family: FontAwesome;
+            content: "\f005 "; /* full star */
+        }
+
+        /* Half star trick */
+        .rate .half:before {
+            content: "\f089 "; /* half star no outline */
+            position: absolute;
+            padding-right: 0;
+            padding-top: 8px; /* maybe negative bottom padding*/
+        }
+        /* Click + hover color */
+        input:checked ~ label, /* color current and previous stars on checked */
+        label:hover, label:hover ~ label { color: #f9c10b;  } /* color previous stars on hover */
+
+        /* Hover highlights */
+        input:checked + label:hover, input:checked ~ label:hover, /* highlight current and previous stars */
+        input:checked ~ label:hover ~ label, /* highlight previous selected stars for new rating */
+        label:hover ~ input:checked ~ label /* highlight previous selected stars */ { color: #f7d331;  } 
+
+        /* Click + hover color */
+        input.rated ~ label, /* color current and previous stars on checked */
+        label:hover, label:hover ~ label { color: #f9c10b;  } /* color previous stars on hover */
+        input.rated + label:hover, input.rated ~ label:hover, /* highlight current and previous stars */
+        input.rated ~ label:hover ~ label, /* highlight previous selected stars for new rating */
+        label:hover ~ input.rated ~ label /* highlight previous selected stars */ { color: #f7d331;  } 
+    </style>
+    
+    <script>
+        window.onload = function() {
+            if ('scroll_position' in sessionStorage) {
+                window.scrollTo({
+                    top: sessionStorage.getItem('scroll_position'),
+                    behavior: 'instant'
+                });
+            }
+        }
+
+        window.onbeforeunload = function() {
+            sessionStorage.setItem('scroll_position', window.pageYOffset);
+        }
+    </script>
+
+</div>
 {% endblock %}
