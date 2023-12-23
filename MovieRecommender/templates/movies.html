@@ -3,7 +3,7 @@
 <div class="container">
     <h2>Movies</h2>
 
-    {% for m in movies %}
+    {% for m in movies.items %}
     <div class="panel panel-default">
         <div class="panel-heading"><b>{{ m.title }}</b>
             <span class="rating">
@@ -64,6 +64,26 @@
             {% endwith %}
         </div>
     {% endfor %}
+
+    <div class="pagination">
+        {% if movies.has_prev %}
+            <a href="{{ url_for('movies', page=movies.prev_num) }}">Previous</a>
+        {% endif %}
+        {% for page_num in movies.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != movies.page %}
+                    <a href="{{ url_for('movies', page=page_num) }}">{{ page_num }}</a>
+                {% else %}
+                    <a class="active" href="#">{{ page_num }}</a>
+                {% endif %}
+            {% else %}
+                <span class="ellipsis">...</span>
+            {% endif %}
+        {% endfor %}
+        {% if movies.has_next %}
+            <a href="{{ url_for('movies', page=movies.next_num) }}">Next</a>
+        {% endif %}
+    </div>
 
     <style>
         /* Base setup */
@@ -133,6 +153,35 @@
         input.rated + label:hover, input.rated ~ label:hover, /* highlight current and previous stars */
         input.rated ~ label:hover ~ label, /* highlight previous selected stars for new rating */
         label:hover ~ input.rated ~ label /* highlight previous selected stars */ { color: #f7d331;  } 
+
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .pagination a {
+            color: black;
+            float: left;
+            padding: 8px 16px;
+            text-decoration: none;
+            transition: background-color .3s;
+        }
+
+        .pagination a.active {
+            background-color: #5bc0de;
+            color: white;
+        }
+
+        .pagination a:hover:not(.active) {
+            background-color: #ddd;
+        }
+
+        .pagination span.ellipsis {
+            float: left;
+            padding: 8px 16px;
+        }
     </style>
     
     <script>

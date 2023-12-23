@@ -178,18 +178,18 @@ def save_scroll() -> (str, int):
     return "", 204
 
 
-@app.route("/movies")
+@app.route("/movies", methods=['GET'])
 @login_required
 def movies() -> str:
-    """Renders the movies page. Displays the first 20 movies
-    and their tags, average ratings, and the logged in user's rating.
+    """Renders the movies page. Displays the 10 movies on the current page 
+    as well as their tags, average ratings, and the logged in user's rating.
 
     Returns:
         str: Rendered movies page.
     """
 
-    # Display first 20 movies
-    movies = Movie.query.limit(20).all()
+    page = request.args.get('page', 1, type=int)
+    movies = Movie.query.paginate(page=page, per_page=10)
 
     # Get movie tags, average ratings, and user ratings
     movie_tags, average_ratings, user_ratings = get_movie_metadata(
