@@ -52,15 +52,7 @@
                     </fieldset> 
                 </form>
             </div>
-            {% with messages = get_flashed_messages(category_filter=[m.id]) %}
-                {% if messages %}
-                    {% for message in messages %}
-                    <div class="alert alert-success">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+
         </div>
     {% endfor %}
 
@@ -133,21 +125,5 @@
         input.rated ~ label:hover ~ label, /* highlight previous selected stars for new rating */
         label:hover ~ input.rated ~ label /* highlight previous selected stars */ { color: #f7d331;  } 
     </style>
-    
-    <script>
-        window.onload = function() {
-            if ('scroll_position' in sessionStorage) {
-                window.scrollTo({
-                    top: sessionStorage.getItem('scroll_position'),
-                    behavior: 'instant'
-                });
-            }
-        }
-
-        window.onbeforeunload = function() {
-            sessionStorage.setItem('scroll_position', window.pageYOffset);
-        }
-    </script>
-
 </div>
 {% endblock %}

@@ -15,19 +15,18 @@ import click
 import datetime
 import numpy as np
 import tensorflow as tf
-from collections import Counter
 from werkzeug.wrappers import Response
 
-from flask import Flask, render_template, flash, request, redirect, session
+from flask import Flask, render_template, flash, request, redirect, session, url_for
 from flask_user import login_required, UserManager, current_user
 
 from sqlalchemy.engine import Engine
-from sqlalchemy import event, not_
+from sqlalchemy import event, not_, case
 from sqlalchemy.exc import IntegrityError
 
 from models import db, User, Movie, MovieRatings
 from recommender_model import Recommender, train_model
-from utils import check_and_read_data, get_movie_metadata
+from utils import check_and_read_data, get_movie_metadata, softmax
 
 import sqlite3
 
@@ -216,10 +215,15 @@ def rate_movie() -> Response:
         Response: Redirects to the movies page.
     """
 
-    try:
-        movie_id = int(request.form["movie_id"])
-        rating = float(request.form["rating"])
+    movie_id = int(request.form["movie_id"])
+    rating = float(request.form["rating"])
 
+    if request.referrer.endswith(url_for("movie_recommender")):
+        flash_category = "success"
+    else:
+        flash_category = movie_id
+
+    try:
         # Check if rating already exists for the given movie and current logged in user
         if (
             MovieRatings.query.filter_by(
@@ -235,7 +239,7 @@ def rate_movie() -> Response:
             )
             db.session.add(movie_rating)
             db.session.commit()
-            flash("Movie rated successfully", movie_id)
+            flash("Movie rated successfully", flash_category)
 
         else:
             movie_rating = MovieRatings.query.filter_by(
@@ -246,7 +250,7 @@ def rate_movie() -> Response:
                 movie_rating.rating = rating
                 movie_rating.timestamp = datetime.date.today()
                 db.session.commit()
-                flash("Rating updated successfully", movie_id)
+                flash("Rating updated successfully", flash_category)
 
     except IntegrityError:
         db.session.rollback()
@@ -292,13 +296,46 @@ def movie_recommender() -> str:
     )
 
     # Get the top 20 recommendations, their movie objects and metadata
-    recommendation_ids = list(recommendations_dict.keys())[:20]
-    movie_recommendations = Movie.query.filter(Movie.id.in_(recommendation_ids)).all()
+    recommendation_ids = list(recommendations_dict.keys())[:100]
+
+    # Define the ordering
+    order = case(
+        {id: index for index, id in enumerate(recommendation_ids)}, value=Movie.id
+    )
+    movie_recommendations = (
+        Movie.query.filter(Movie.id.in_(recommendation_ids)).order_by(order).all()
+    )
     movie_tags, average_ratings, _ = get_movie_metadata(
         db=db,
         movies=movie_recommendations,
         current_user=current_user,
         get_user_ratings=False,
+    )
+
+    rating_weights = {
+        key: value[0] * value[1] for key, value in average_ratings.items()
+    }
+
+    # Find the minimum and maximum values
+    min_val = min(rating_weights.values())
+    max_val = max(rating_weights.values())
+
+    # Apply min-max normalization and add a small random value to each rating for diversity
+    rating_weights = {
+        key: (((value - min_val) / (max_val - min_val)) * 0.05)
+        + utility
+        + np.random.uniform(0, 0.05)
+        for (key, value), utility in zip(
+            rating_weights.items(), list(recommendations_dict.values())[:200]
+        )
+    }
+    rating_weights = dict(
+        sorted(rating_weights.items(), key=lambda x: x[1], reverse=True)
+    )
+
+    order = case({id: index for index, id in enumerate(rating_weights)}, value=Movie.id)
+    movie_recommendations = (
+        Movie.query.filter(Movie.id.in_(list(rating_weights))).order_by(order).all()
     )
 
     return render_template(

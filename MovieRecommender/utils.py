@@ -1,7 +1,7 @@
 import csv
-import sys
 import datetime
 import flask_user
+import numpy as np
 import flask_sqlalchemy
 from collections import Counter
 from sqlalchemy.exc import IntegrityError
@@ -201,11 +201,39 @@ def get_movie_metadata(
         movies (list): A list of Movie objects.
         current_user (User): The current user.
         get_user_ratings (bool): Whether to get ratings for the current user.
+
+    Returns:
+        movie_tags (dict): A dictionary of movie tags.
+        average_ratings (dict): A dictionary of average ratings.
+        user_ratings (dict): A dictionary of user ratings.
     """
 
     movie_tags = {}
     average_ratings = {}
     user_ratings = {}
+
+    # Fetch all ratings for all movies in one go
+    all_ratings = (
+        db.session.query(
+            MovieRatings.movie_id,
+            db.func.avg(MovieRatings.rating),
+            db.func.count(MovieRatings.movie_id),
+        )
+        .group_by(MovieRatings.movie_id)
+        .all()
+    )
+
+    # Convert the result into a dictionary for easy access
+    all_ratings_dict = {movie_id: (avg, count) for movie_id, avg, count in all_ratings}
+
+    if get_user_ratings:
+        # Fetch all user ratings for all movies in one go
+        all_user_ratings = MovieRatings.query.filter_by(user_id=current_user.id).all()
+
+        # Convert the result into a dictionary for easy access
+        all_user_ratings_dict = {
+            rating.movie_id: rating.rating for rating in all_user_ratings
+        }
 
     for movie in movies:
         # Get movie tags for each movie, sort them by tag count first and then alphabetically
@@ -216,24 +244,27 @@ def get_movie_metadata(
             movie_tags[movie.id] = sorted_tags
 
         # Get average rating for each movie
-        rating_query = MovieRatings.query.filter_by(movie_id=movie.id)
-
-        if rating_query.count() > 0:
-            average_ratings[movie.id] = (
-                round(
-                    rating_query.with_entities(
-                        db.func.avg(MovieRatings.rating)
-                    ).scalar(),
-                    1,
-                ),
-                rating_query.count(),
-            )
+        if movie.id in all_ratings_dict:
+            avg, count = all_ratings_dict[movie.id]
+            average_ratings[movie.id] = (round(avg, 1), count)
 
         if get_user_ratings:
             # Get rating for each movie by the logged in user
-            user_rating_query = rating_query.filter_by(user_id=current_user.id)
-
-            if user_rating_query.count() == 1:
-                user_ratings[movie.id] = user_rating_query.first().rating
+            if movie.id in all_user_ratings_dict:
+                user_ratings[movie.id] = all_user_ratings_dict[movie.id]
 
     return movie_tags, average_ratings, user_ratings
+
+
+def softmax(logits):
+    """Computes softmax activations.
+
+    Arguments:
+        logits (np.array): The logits.
+
+    Returns:
+        np.array: The softmax activations.
+    """
+
+    exp = np.exp(logits)
+    return exp / np.sum(exp)
