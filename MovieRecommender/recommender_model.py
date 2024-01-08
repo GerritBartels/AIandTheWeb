@@ -1,4 +1,5 @@
 import random
+import numpy as np
 import tensorflow as tf
 
 from models import MovieRatings
@@ -26,6 +27,10 @@ class Recommender(tf.keras.Model):
         """
 
         super(Recommender, self).__init__()
+
+        self.num_users = num_users
+        self.num_movies = num_movies
+        self.embedding_dim = embedding_dim
 
         self.user_embedding = tf.keras.layers.Embedding(num_users, embedding_dim)
         self.movie_embedding = tf.keras.layers.Embedding(num_movies, embedding_dim)
@@ -89,7 +94,30 @@ class Recommender(tf.keras.Model):
         output = self.output_layer(x, training=training)
 
         return output
+    
+    def add_user(self):
+        # Get the weights of the user_embedding layer
+        weights = self.user_embedding.get_weights()[0]
 
+        # Compute the average of the weights
+        average_weight = np.mean(weights, axis=0)
+
+        # Append the average weight to the weights
+        new_weights = np.vstack([weights, average_weight])
+
+        # Increment the num_users attribute
+        self.num_users += 1
+
+        # Recreate the user_embedding layer with the new number of users
+        self.user_embedding = tf.keras.layers.Embedding(self.num_users, self.embedding_dim)
+
+        # Initialize the layer
+        self.user_embedding(0)
+
+        # Set the updated weights to the user_embedding layer
+        self.user_embedding.embeddings.assign(new_weights)
+
+        
 
 def build_dataset(split: float) -> (tf.data.Dataset, tf.data.Dataset, list, list):
     """Builds the dataset for the recommender model.
@@ -112,7 +140,8 @@ def build_dataset(split: float) -> (tf.data.Dataset, tf.data.Dataset, list, list
     target_data = []
 
     for row in movie_ratings:
-        input_data.append([row.user_id, row.movie_id])
+        # Subtract 1 from user_id and movie_id to make them zero-indexed
+        input_data.append([row.user_id - 1, row.movie_id - 1])
         target_data.append(row.rating / 5)
 
     train_data = tf.data.Dataset.from_tensor_slices(

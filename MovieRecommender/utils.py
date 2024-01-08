@@ -94,14 +94,18 @@ def check_and_read_data(
                     try:
                         user_id = row[0]
 
-                        if User.query.filter_by(id=user_id).count() == 0:
-                            username = f"User{user_id}"
+                        username = f"User{user_id}"
+                        query = User.query.filter_by(username=username)
+                        if query.count() == 0:
                             user = User(
-                                id=user_id,
                                 username=username,
                                 password=user_manager.hash_password(username),
                             )
                             db.session.add(user)
+                            db.session.commit()
+                            user_id = user.id
+                        else:
+                            user_id = query.first().id
 
                         movie_id = row[1]
                         tag = row[2]
@@ -143,14 +147,18 @@ def check_and_read_data(
                     try:
                         user_id = row[0]
 
-                        if User.query.filter_by(id=user_id).count() == 0:
-                            username = f"User{user_id}"
+                        username = f"User{user_id}"
+                        query = User.query.filter_by(username=username)
+                        if query.count() == 0:
                             user = User(
-                                id=user_id,
                                 username=username,
                                 password=user_manager.hash_password(username),
                             )
                             db.session.add(user)
+                            db.session.commit()
+                            user_id = user.id
+                        else:
+                            user_id = query.first().id
 
                         movie_id = row[1]
                         rating = row[2]

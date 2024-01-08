@@ -19,6 +19,7 @@ from werkzeug.wrappers import Response
 
 from flask import Flask, render_template, flash, request, redirect, session, url_for
 from flask_user import login_required, UserManager, current_user
+from flask_user.signals import user_registered
 
 from sqlalchemy.engine import Engine
 from sqlalchemy import event, not_, case
@@ -26,7 +27,7 @@ from sqlalchemy.exc import IntegrityError
 
 from models import db, User, Movie, MovieRatings
 from recommender_model import Recommender, train_model
-from utils import check_and_read_data, get_movie_metadata, softmax
+from utils import check_and_read_data, get_movie_metadata
 
 import sqlite3
 
@@ -152,6 +153,19 @@ def isinteger(value: any) -> bool:
     is_int = isinstance(value, int)
 
     return is_int
+
+
+@user_registered.connect_via(app)
+def _after_register_hook(sender, user, **extra):
+    """Adds the user to the recommender model after registration.
+
+    Arguments:
+        sender (flask.Flask): The Flask app.
+        user (User): The user that was registered.
+        extra (dict): Extra arguments.
+    """
+
+    recommender_model.add_user()
 
 
 @app.route("/")
@@ -286,8 +300,10 @@ def movie_recommender() -> str:
     unrated_movies = np.asarray(unrated_movies)
 
     # Get recommendations for the current user
-    data = tf.convert_to_tensor(np.concatenate((user_id, unrated_movies), axis=1))
+    # Subtract 1 from user_id and movie_id to make them zero-indexed
+    data = tf.convert_to_tensor(np.concatenate((user_id-1, unrated_movies-1), axis=1))
     predictions = recommender_model(data, training=False).numpy()
+    recommender_model.add_user()
 
     # Combine movie IDs and predictions into a dictionary and sort by prediction
     recommendations_dict = dict(zip(unrated_movies.flatten(), predictions.flatten()))
