@@ -7,15 +7,13 @@
     <title>{{ user_manager.USER_APP_NAME }}</title>
 
     <!-- Bootstrap -->
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+          href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" >
 
-    <!-- In-lining styles to avoid needing a separate .css file -->
-    <style>
-        hr { border-color: #cccccc; margin: 0; }
-        .no-margins { margin: 0px; }
-        .with-margins { margin: 10px; }
-        .col-centered { float: none; margin: 0 auto; }
-    </style>
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/styles.css')}}">
+
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -84,14 +82,9 @@
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <!-- Bootstrap -->
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <!-- Custom Flash Messages JavaScript -->
+    <script src="{{ url_for('static', filename='js/flash_messages.js')}}"></script>
 
-    <script>
-        window.setTimeout(function() {
-            $(".alert").fadeTo(500, 0).slideUp(500, function(){
-                $(this).remove(); 
-            });
-        }, 2000);
-    </script>
 
     {# *** Allow sub-templates to insert extra html to the bottom of the body *** #}
     {% block extra_js %}{% endblock %}
