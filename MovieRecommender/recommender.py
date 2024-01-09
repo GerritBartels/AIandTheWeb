@@ -15,11 +15,13 @@ import click
 import datetime
 import numpy as np
 import tensorflow as tf
+from threading import Lock
 from werkzeug.wrappers import Response
 
 from flask import Flask, render_template, flash, request, redirect, session, url_for
 from flask_user import login_required, UserManager, current_user
 from flask_user.signals import user_registered
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from sqlalchemy.engine import Engine
 from sqlalchemy import event, not_, case
@@ -74,6 +76,12 @@ app.app_context().push()  # create an app context before initializing db
 db.init_app(app)  # initialize database
 db.create_all()  # create database if necessary
 user_manager = UserManager(app, db, User)  # initialize Flask-User management
+
+# Used to retrain the recommender model every n new ratings
+new_ratings_counter = 1
+
+# Define lock used to prevent user registration while training the recommender model
+retraining_lock = Lock()
 
 if "initdb" not in sys.argv:
     # Get total number of users and movies
@@ -158,14 +166,51 @@ def isinteger(value: any) -> bool:
 @user_registered.connect_via(app)
 def _after_register_hook(sender, user, **extra):
     """Adds the user to the recommender model after registration.
+    In case the recommender model is being trained, the user is added after training.
 
     Arguments:
         sender (flask.Flask): The Flask app.
         user (User): The user that was registered.
         extra (dict): Extra arguments.
     """
+    with retraining_lock:
+        recommender_model.add_user()
 
-    recommender_model.add_user()
+
+def retrain_recommender_model() -> None:
+    """Retrains the recommender model every 100 new ratings."""
+
+    global new_ratings_counter
+
+    with retraining_lock:
+        with app.app_context():
+
+            if new_ratings_counter % 2 == 0:
+                UNIQUE_USERS = len(User.query.with_entities(User.id).all())
+
+                print("Retraining recommender model...")
+                train_model(
+                    hidden_size=HIDDEN_SIZE,
+                    embedding_dim=EMBEDDING_DIM,
+                    dropout=DROPOUT,
+                    batch_size=BATCH_SIZE,
+                    learning_rate=LEARNING_RATE,
+                    epochs=EPOCHS,
+                    num_users=UNIQUE_USERS,
+                    num_movies=UNIQUE_MOVIES,
+                )
+                print("Retrained the model.")
+
+                recommender_model.load_weights("weights/recommender_weights")
+                recommender_model.build((None, 2))
+
+                print("Retrained recommender model weights loaded.")
+                new_ratings_counter = 1
+
+# Create and start background scheduler
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=retrain_recommender_model, trigger="interval", minutes=0.5)
+scheduler.start()
 
 
 @app.route("/")
@@ -228,6 +273,7 @@ def rate_movie() -> Response:
     Returns:
         Response: Redirects to the movies page.
     """
+    global new_ratings_counter
 
     movie_id = int(request.form["movie_id"])
     rating = float(request.form["rating"])
@@ -265,6 +311,8 @@ def rate_movie() -> Response:
                 movie_rating.timestamp = datetime.date.today()
                 db.session.commit()
                 flash("Rating updated successfully", flash_category)
+        
+        new_ratings_counter += 1
 
     except IntegrityError:
         db.session.rollback()
@@ -364,4 +412,4 @@ def movie_recommender() -> str:
 
 # Start development web server
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(port=5000, debug=False)
