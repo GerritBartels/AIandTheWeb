@@ -117,7 +117,8 @@ class Recommender(tf.keras.Model):
         # Set the updated weights to the user_embedding layer
         self.user_embedding.embeddings.assign(new_weights)
 
-        
+        self.save_weights("weights/recommender_weights")
+ 
 
 def build_dataset(split: float) -> (tf.data.Dataset, tf.data.Dataset, list, list):
     """Builds the dataset for the recommender model.
