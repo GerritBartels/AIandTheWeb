@@ -62,11 +62,14 @@ class Recommender(tf.keras.Model):
 
         Arguments:
             inputs (tf.Tensor): The input tensor containing the user and movie ids.
+            training (bool): Whether or not the model is currently training.
 
         Returns:
             output (tf.Tensor): The output tensor containing the predicted ratings.
         """
 
+        # User and movie vectors are first passed through a dense layer and are then
+        # concatenated together before being passed through the rest of the model
         user_vector = self.user_embedding(inputs[:, 0], training=training)
         user_vector = self.dense1(user_vector, training=training)
         user_vector = self.dropout1(user_vector, training=training)
@@ -94,37 +97,37 @@ class Recommender(tf.keras.Model):
         output = self.output_layer(x, training=training)
 
         return output
-    
-    def add_user(self):
-        # Get the weights of the user_embedding layer
+
+    def add_user(self) -> None:
+        """Adds a new user to the model. The new user vector is
+        added as the average embedding weights of all the users.
+        """
+
+        # Compute the average of the embedding weights and
+        # add it to the weights matrix
         weights = self.user_embedding.get_weights()[0]
-
-        # Compute the average of the weights
         average_weight = np.mean(weights, axis=0)
-
-        # Append the average weight to the weights
         new_weights = np.vstack([weights, average_weight])
 
-        # Increment the num_users attribute
         self.num_users += 1
 
         # Recreate the user_embedding layer with the new number of users
-        self.user_embedding = tf.keras.layers.Embedding(self.num_users, self.embedding_dim)
+        self.user_embedding = tf.keras.layers.Embedding(
+            self.num_users, self.embedding_dim
+        )
 
-        # Initialize the layer
+        # Initialize the layer and assign the new weights
         self.user_embedding(0)
-
-        # Set the updated weights to the user_embedding layer
         self.user_embedding.embeddings.assign(new_weights)
 
         self.save_weights("weights/recommender_weights")
- 
+
 
 def build_dataset(split: float) -> (tf.data.Dataset, tf.data.Dataset, list, list):
     """Builds the dataset for the recommender model.
 
     Arguments:
-        split (float): The train test split.
+        split (float): The train test split ratio.
 
     Returns:
         train_data (tf.data.Dataset): The training dataset.

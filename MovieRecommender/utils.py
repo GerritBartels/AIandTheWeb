@@ -36,7 +36,7 @@ def check_and_read_data(
                         year = title[-5:-1]
                         movie = Movie(id=id, title=title, year=year)
                         db.session.add(movie)
-                        # genres is a list of genres
+                        # Genres is a list of genres
                         genres = row[2].split("|")
 
                         for genre in genres:
@@ -93,9 +93,10 @@ def check_and_read_data(
                 if count > 0:
                     try:
                         user_id = row[0]
-
                         username = f"User{user_id}"
                         query = User.query.filter_by(username=username)
+
+                        # Create a new user if the user doesn't exist in the database
                         if query.count() == 0:
                             user = User(
                                 username=username,
@@ -146,9 +147,10 @@ def check_and_read_data(
                 if count > 0:
                     try:
                         user_id = row[0]
-
                         username = f"User{user_id}"
                         query = User.query.filter_by(username=username)
+
+                        # Create a new user if the user doesn't exist in the database
                         if query.count() == 0:
                             user = User(
                                 username=username,
@@ -264,7 +266,7 @@ def get_movie_metadata(
     return movie_tags, average_ratings, user_ratings
 
 
-def softmax(logits):
+def softmax(logits) -> np.array:
     """Computes softmax activations.
 
     Arguments:

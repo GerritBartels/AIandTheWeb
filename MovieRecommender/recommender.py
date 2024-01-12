@@ -12,6 +12,7 @@ import os
 os.chdir(__location__)
 
 import click
+import sqlite3
 import datetime
 import numpy as np
 import tensorflow as tf
@@ -19,8 +20,10 @@ from threading import Lock
 from werkzeug.wrappers import Response
 
 from flask import Flask, render_template, flash, request, redirect, session, url_for
-from flask_user import login_required, UserManager, current_user
+
 from flask_user.signals import user_registered
+from flask_user import login_required, UserManager, current_user
+
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from sqlalchemy.engine import Engine
@@ -31,8 +34,7 @@ from models import db, User, Movie, MovieRatings
 from recommender_model import Recommender, train_model
 from utils import check_and_read_data, get_movie_metadata
 
-import sqlite3
-
+# Register numpy int32 as a converter to sqlite3
 sqlite3.register_adapter(np.int32, lambda val: int(val))
 
 
@@ -57,34 +59,34 @@ class ConfigClass(object):
     SECRET_KEY = "TheSecretestKeyToHaveRoamedThisPlanet"
 
     # Flask-SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = (
-        "sqlite:///movie_recommender.sqlite"  # File-based SQL database
-    )
-    SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
+    # Here a file-based SQL database
+    SQLALCHEMY_DATABASE_URI = "sqlite:///movie_recommender.sqlite"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Flask-User settings
-    USER_APP_NAME = "Movie Recommender"  # Shown in email templates and page footers
-    USER_ENABLE_EMAIL = False  # Disable email authentication
-    USER_ENABLE_USERNAME = True  # Enable username authentication
-    USER_REQUIRE_RETYPE_PASSWORD = True  # Simplify register form
+    USER_APP_NAME = "Movie Recommender"
+    USER_ENABLE_EMAIL = False
+    USER_ENABLE_USERNAME = True
+    USER_REQUIRE_RETYPE_PASSWORD = True
 
 
 # Create Flask app
 app = Flask(__name__)
-app.config.from_object(__name__ + ".ConfigClass")  # configuration
-app.app_context().push()  # create an app context before initializing db
-db.init_app(app)  # initialize database
-db.create_all()  # create database if necessary
-user_manager = UserManager(app, db, User)  # initialize Flask-User management
+app.config.from_object(__name__ + ".ConfigClass")
+app.app_context().push()
+db.init_app(app)
+db.create_all()
+user_manager = UserManager(app, db, User)
 
 # Used to retrain the recommender model every n new ratings
+RETRAIN_EVERY = 100
 new_ratings_counter = 1
 
-# Define lock used to prevent user registration while training the recommender model
+# Define lock. Used to prevent user registration while
+# training the recommender model
 retraining_lock = Lock()
 
 if "initdb" not in sys.argv:
-    # Get total number of users and movies
     HIDDEN_SIZE = 2048
     EMBEDDING_DIM = 512
     DROPOUT = 0.2
@@ -184,8 +186,7 @@ def retrain_recommender_model() -> None:
 
     with retraining_lock:
         with app.app_context():
-
-            if new_ratings_counter % 100 == 0:
+            if new_ratings_counter % RETRAIN_EVERY == 0:
                 UNIQUE_USERS = len(User.query.with_entities(User.id).all())
 
                 print("Retraining recommender model...")
@@ -206,6 +207,7 @@ def retrain_recommender_model() -> None:
 
                 print("Retrained recommender model weights loaded.")
                 new_ratings_counter = 1
+
 
 # Create and start background scheduler
 scheduler = BackgroundScheduler()
@@ -237,17 +239,17 @@ def save_scroll() -> (str, int):
     return "", 204
 
 
-@app.route("/movies", methods=['GET'])
+@app.route("/movies", methods=["GET"])
 @login_required
 def movies() -> str:
-    """Renders the movies page. Displays the 10 movies on the current page 
+    """Renders the movies page. Displays the 10 movies on the current page
     as well as their tags, average ratings, and the logged in user's rating.
 
     Returns:
         str: Rendered movies page.
     """
 
-    page = request.args.get('page', 1, type=int)
+    page = request.args.get("page", 1, type=int)
     movies = Movie.query.paginate(page=page, per_page=10)
 
     # Get movie tags, average ratings, and user ratings
@@ -278,6 +280,7 @@ def rate_movie() -> Response:
     movie_id = int(request.form["movie_id"])
     rating = float(request.form["rating"])
 
+    # Adapt flash cards depending on where the user came from
     if request.referrer.endswith(url_for("movie_recommender")):
         flash_category = "success"
     else:
@@ -311,7 +314,7 @@ def rate_movie() -> Response:
                 movie_rating.timestamp = datetime.date.today()
                 db.session.commit()
                 flash("Rating updated successfully", flash_category)
-        
+
         new_ratings_counter += 1
 
     except IntegrityError:
@@ -349,7 +352,9 @@ def movie_recommender() -> str:
 
     # Get recommendations for the current user
     # Subtract 1 from user_id and movie_id to make them zero-indexed
-    data = tf.convert_to_tensor(np.concatenate((user_id-1, unrated_movies-1), axis=1))
+    data = tf.convert_to_tensor(
+        np.concatenate((user_id - 1, unrated_movies - 1), axis=1)
+    )
     predictions = recommender_model(data, training=False).numpy()
     recommender_model.add_user()
 

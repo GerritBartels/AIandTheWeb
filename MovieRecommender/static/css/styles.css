@@ -1,4 +1,5 @@
 /* Rating Stars */
+/* Code adapted from: https://codepen.io/anefzaoui/pen/NWPZzMa */
 @import url(//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css);
 body {
     margin: 5%; 
@@ -23,15 +24,18 @@ body {
     display: inline-block;
     border: 0;
 }
+
 /* Hide radio */
 .rate > input {
     display: none;
 }
+
 /* Order correctly by floating highest to the right */
 .rate > label {
     float: right;
 }
-/* The star of the show */
+
+/* The stars */
 .rate > label:before {
     display: inline-block;
     font-size: 3rem;
@@ -50,6 +54,7 @@ body {
     padding-right: 0;
     padding-top: 8px; /* maybe negative bottom padding*/
 }
+
 /* Click + hover color */
 input:checked ~ label, /* color current and previous stars on checked */
 label:hover, label:hover ~ label { color: #f9c10b;  } /* color previous stars on hover */
