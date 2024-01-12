@@ -42,7 +42,7 @@
                 </div>
             </div>
             <div class="panel-footer">
-                <form action="/rate_movie" method="post" id="form{{ m.id }}">
+                <form action="{{ url_for('rate_movie') }}" method="post" id="form{{ m.id }}">
                     <input type="hidden" name="movie_id" value="{{ m.id }}">
                     <fieldset class="rate">
                         {% for i in [5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5] %}

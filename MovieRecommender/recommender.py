@@ -185,7 +185,7 @@ def retrain_recommender_model() -> None:
     with retraining_lock:
         with app.app_context():
 
-            if new_ratings_counter % 2 == 0:
+            if new_ratings_counter % 100 == 0:
                 UNIQUE_USERS = len(User.query.with_entities(User.id).all())
 
                 print("Retraining recommender model...")
