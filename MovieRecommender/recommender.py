@@ -70,6 +70,12 @@ class ConfigClass(object):
     USER_ENABLE_USERNAME = True
     USER_REQUIRE_RETYPE_PASSWORD = True
 
+    # Make sure that the user is redirected to the home page after login, logout, etc.
+    USER_AFTER_REGISTER_ENDPOINT = 'home_page'
+    USER_AFTER_CONFIRM_ENDPOINT = 'home_page'
+    USER_AFTER_LOGIN_ENDPOINT = 'home_page'
+    USER_AFTER_LOGOUT_ENDPOINT = 'home_page'
+
 
 # Create Flask app
 app = Flask(__name__)
