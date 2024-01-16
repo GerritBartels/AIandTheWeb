@@ -100,8 +100,10 @@ if "initdb" not in sys.argv:
     BATCH_SIZE = 512
     LEARNING_RATE = 0.001
     EPOCHS = 10
-    UNIQUE_USERS = len(User.query.with_entities(User.id).all())
-    UNIQUE_MOVIES = len(Movie.query.with_entities(Movie.id).all())
+    NUM_UNIQUE_USERS = len(User.query.with_entities(User.id).all())
+    UNIQUE_MOVIES = Movie.query.with_entities(Movie.id).all()
+    UNIQUE_MOVIES_VOCAB = [str(movie[0]) for movie in UNIQUE_MOVIES]
+    NUM_UNIQUE_MOVIES = len(UNIQUE_MOVIES)
 
     if "train" not in sys.argv:
         print("Loading recommender model...")
@@ -110,8 +112,9 @@ if "initdb" not in sys.argv:
             hidden_size=HIDDEN_SIZE,
             embedding_dim=EMBEDDING_DIM,
             dropout=DROPOUT,
-            num_users=UNIQUE_USERS,
-            num_movies=UNIQUE_MOVIES,
+            num_users=NUM_UNIQUE_USERS,
+            num_movies=NUM_UNIQUE_MOVIES,
+            movie_vocab=UNIQUE_MOVIES_VOCAB,
         )
         recommender_model.load_weights("weights/recommender_weights")
         recommender_model.build((None, 2))
@@ -150,8 +153,9 @@ def train_command() -> None:
         batch_size=BATCH_SIZE,
         learning_rate=LEARNING_RATE,
         epochs=EPOCHS,
-        num_users=UNIQUE_USERS,
-        num_movies=UNIQUE_MOVIES,
+        num_users=NUM_UNIQUE_USERS,
+        num_movies=NUM_UNIQUE_MOVIES,
+        movie_vocab=UNIQUE_MOVIES_VOCAB,
     )
     print("Trained the model.")
 
@@ -205,7 +209,8 @@ def retrain_recommender_model() -> None:
                     learning_rate=LEARNING_RATE,
                     epochs=EPOCHS,
                     num_users=UNIQUE_USERS,
-                    num_movies=UNIQUE_MOVIES,
+                    num_movies=NUM_UNIQUE_MOVIES,
+                    movie_vocab=UNIQUE_MOVIES_VOCAB,
                 )
                 print("Retrained the model.")
 

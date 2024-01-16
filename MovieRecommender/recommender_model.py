@@ -15,6 +15,7 @@ class Recommender(tf.keras.Model):
         dropout: float,
         num_users: int,
         num_movies: int,
+        movie_vocab: list,
     ) -> None:
         """Initializes the recommender model.
 
@@ -24,6 +25,7 @@ class Recommender(tf.keras.Model):
             dropout (float): The dropout rate.
             num_users (int): The number of users in the dataset.
             num_movies (int): The number of movies in the dataset.
+            movie_vocab (list): All movie ids as a list of strings.
         """
 
         super(Recommender, self).__init__()
@@ -31,6 +33,8 @@ class Recommender(tf.keras.Model):
         self.num_users = num_users
         self.num_movies = num_movies
         self.embedding_dim = embedding_dim
+
+        self.movie_lookup = tf.keras.layers.StringLookup(vocabulary=movie_vocab)
 
         self.user_embedding = tf.keras.layers.Embedding(num_users, embedding_dim)
         self.movie_embedding = tf.keras.layers.Embedding(num_movies, embedding_dim)
@@ -173,6 +177,7 @@ def train_model(
     epochs,
     num_users,
     num_movies,
+    movie_vocab,
 ) -> None:
     """Trains the recommender model.
 
@@ -185,6 +190,7 @@ def train_model(
         epochs (int): The number of epochs to train for.
         num_users (int): The number of users in the dataset.
         num_movies (int): The number of movies in the dataset.
+        movie_vocab (list): All movie ids as a list of strings.
     """
 
     train_data, test_data = build_dataset(0.8)
@@ -195,6 +201,7 @@ def train_model(
         dropout=dropout,
         num_users=num_users,
         num_movies=num_movies,
+        movie_vocab=movie_vocab,
     )
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)

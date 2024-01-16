@@ -4,3 +4,5 @@ flask-user==1.0.2.2
 bcrypt==4.0.1
 tensorflow==2.10.1
 blinker
+fuzzywuzzy
+apscheduler
