@@ -2,6 +2,14 @@
 {% block content %}
 <div class="container">
     <h2>Movies</h2>
+    <form action="{{ url_for('movies_search') }}" method="GET">
+        <input type="text" name="query" placeholder="Search...">
+        <button type="submit" class="material-symbols-outlined">
+          <span class="material-symbols-outlined">
+            Search
+          </span>
+        </button>
+    </form>
 
     {% for m in movies.items %}
     <div class="panel panel-default">
@@ -16,6 +24,11 @@
                 <div class="row">
                     <!-- Display movie genres and tags -->
                     <div class="col-md-8">
+                        <!-- Display movie posters using OMDb API-->
+                        {% if m.links[0].imdb_id %}
+                            <img src="http://img.omdbapi.com/?i=tt{{ m.links[0].imdb_id }}&apikey=d911d61b" alt="Movie Poster" height="250">
+                        {% endif %}
+                        <br><br>
                         <p>
                             {% for g in m.genres %}
                                 <span class="label label-default">{{ g.genre }}</span>
@@ -28,6 +41,7 @@
                                 {% endif %}
                             {% endfor %}
                         </p>
+
                     </div>
                     <!-- Display links to IMDB and TMDB -->
                     <div class="col-md-4 text-right">

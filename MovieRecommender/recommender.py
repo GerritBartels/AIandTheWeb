@@ -17,6 +17,7 @@ import datetime
 import numpy as np
 import tensorflow as tf
 from threading import Lock
+from fuzzywuzzy import fuzz
 from werkzeug.wrappers import Response
 
 from flask import Flask, render_template, flash, request, redirect, session, url_for
@@ -239,6 +240,33 @@ def save_scroll() -> (str, int):
     return "", 204
 
 
+class CustomPagination:
+    def __init__(self, items, page, per_page, total):
+        self.items = items
+        self.page = page
+        self.per_page = per_page
+        self.total = total
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def iter_pages(self, left_edge=2, left_current=2, right_current=5, right_edge=2):
+        last = 0
+        for num in range(1, self.pages + 1):
+            if num <= left_edge or \
+               (num > self.page - left_current - 1 and \
+                num < self.page + right_current) or \
+               num > self.pages - right_edge:
+                if last + 1 != num:
+                    yield None
+                yield num
+                last = num
+
+    @property
+    def pages(self):
+        return max(0, self.total - 1) // self.per_page + 1
+    
+
 @app.route("/movies", methods=["GET"])
 @login_required
 def movies() -> str:
@@ -260,6 +288,67 @@ def movies() -> str:
     return render_template(
         "movies.html",
         movies=movies,
+        movie_tags=movie_tags,
+        average_ratings=average_ratings,
+        user_ratings=user_ratings,
+    )
+
+
+@app.route("/movies_search", methods=["GET"])
+@login_required
+def movies_search():
+    """Renders the movies search page. Displays 10 searched movies per page."""
+    
+    page = request.args.get("page", 1, type=int)
+    search_query = request.args.get("query", "", type=str)
+
+    if search_query:
+        all_movies = Movie.query.all()
+
+        # Calculate fuzzy ratios and store them with the corresponding movie in a list of tuples
+        movie_ratios = [(movie, fuzz.ratio(movie.title.lower(), search_query.lower())) for movie in all_movies]
+
+        # Sort the list of tuples based on the fuzzy ratio
+        movie_ratios.sort(key=lambda x: x[1], reverse=True)
+
+        # Find the index where the fuzzy ratio falls below the threshold
+        threshold = 45  # Set your desired threshold here
+        index = next((index for index, (movie, ratio) in enumerate(movie_ratios) if ratio < threshold), len(movie_ratios))
+
+        # Discard movies that don't meet the threshold and store their IDs in the session
+        session["all_searched_movie_ids"] = [movie.id for movie, ratio in movie_ratios[:index]]
+
+    # If no search query was provided, redirect to the movies page
+    # If no movies were found, display a flash message
+    if session.get("all_searched_movie_ids") is None:
+        flash("No search query was provided", "error")
+        return redirect(url_for("movies"))
+
+    elif len(session["all_searched_movie_ids"]) == 0:
+        flash("No movies were found", "error")
+        return render_template("movies_search.html", movies={}, movie_tags={}, average_ratings={}, user_ratings={})
+
+    total = len(session["all_searched_movie_ids"])
+    movie_ids = session["all_searched_movie_ids"][(page-1)*10 : page*10]
+
+    # Query the database to get the movie objects
+    movies = Movie.query.filter(Movie.id.in_(movie_ids)).all()
+
+    # Create a dictionary with movie IDs as keys and movies as values
+    movies_dict = {movie.id: movie for movie in movies}
+
+    # Sort the movies based on the order of IDs in movie_ids
+    movies = [movies_dict[id] for id in movie_ids]
+
+    movies = CustomPagination(movies, page, 10, total)
+
+    movie_tags, average_ratings, user_ratings = get_movie_metadata(
+        db=db, movies=movies, current_user=current_user
+    )
+
+    return render_template(
+        "movies_search.html",
+        movies=movies, 
         movie_tags=movie_tags,
         average_ratings=average_ratings,
         user_ratings=user_ratings,
@@ -364,8 +453,8 @@ def movie_recommender() -> str:
         sorted(recommendations_dict.items(), key=lambda x: x[1], reverse=True)
     )
 
-    # Get the top 20 recommendations, their movie objects and metadata
-    recommendation_ids = list(recommendations_dict.keys())[:100]
+    # Get the top 50 recommendations, their movie objects and metadata
+    recommendation_ids = list(recommendations_dict.keys())[:50]
 
     # Define the ordering
     order = case(
@@ -417,4 +506,4 @@ def movie_recommender() -> str:
 
 # Start development web server
 if __name__ == "__main__":
-    app.run(port=5000, debug=False)
+    app.run(port=5000, debug=True)

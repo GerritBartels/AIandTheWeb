@@ -1,0 +1,117 @@
+{% extends "flask_user_layout.html" %}
+{% block content %}
+<div class="container">
+    <h2>Movies</h2>
+    <form action="{{ url_for('movies_search') }}" method="GET">
+        <input type="text" name="query" placeholder="Search...">
+        <button type="submit" class="material-symbols-outlined">
+          <span class="material-symbols-outlined">
+            Search
+          </span>
+        </button>
+    </form>
+
+    {% if movies %}
+        {% for m in movies.items %}
+            <div class="panel panel-default">
+                <!-- Display movie title, average rating and number of votes -->
+                <div class="panel-heading"><b>{{ m.title }}</b>
+                    <span class="rating">
+                        <i class="fa fa-star" aria-hidden="true"></i>
+                        <b>{{ average_ratings[m.id][0] }}/5</b> ({{ average_ratings[m.id][1] }} votes)
+                    </span>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <!-- Display movie genres and tags -->
+                        <div class="col-md-8">
+                            <!-- Display movie posters using OMDb API-->
+                            {% if m.links[0].imdb_id %}
+                                <img src="http://img.omdbapi.com/?i=tt{{ m.links[0].imdb_id }}&apikey=d911d61b" alt="Movie Poster" height="250">
+                            {% endif %}
+                            <br><br>
+                            <p>
+                                {% for g in m.genres %}
+                                    <span class="label label-default">{{ g.genre }}</span>
+                                {% endfor %}
+                            </p>
+                            <p>
+                                {% for tag in movie_tags[m.id] %}
+                                    {% if loop.index <= 5 %}
+                                        <span class="label label-info">{{ tag }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </p>
+
+                        </div>
+                        <!-- Display links to IMDB and TMDB -->
+                        <div class="col-md-4 text-right">
+                            <div style="margin-bottom: 10px;">
+                                <a href="https://www.imdb.com/title/tt{{ m.links[0].imdb_id }}" target="_blank">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" alt="IMDB Logo" height="30">
+                                </a>
+                            </div>
+                            <div>
+                                <a href="https://www.themoviedb.org/movie/{{ m.links[0].tmdb_id }}" target="_blank">
+                                    <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="TMDB Logo" height="20">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Display interactive star rating form -->
+                <div class="panel-footer">
+                    <form action="{{ url_for('rate_movie') }}" method="post" id="form{{ m.id }}">
+                        <input type="hidden" name="movie_id" value="{{ m.id }}">
+                        <fieldset class="rate">
+                            {% for i in [5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5] %}
+                                <input type="submit" id="rating{{ i*2 }}-{{ m.id }}" name="rating" value="{{ i }}" form="form{{ m.id }}"
+                                {% if user_ratings[m.id] == i %}class="rated"{% endif %}/>
+                                <label {% if i != i|round(0) %}class="half"{% endif %} for="rating{{ i*2 }}-{{ m.id }}" title="{{ i }} stars"></label>
+                            {% endfor %}
+                        </fieldset> 
+                    </form>
+                </div>
+                <!-- Display flash messages inside movie panel -->
+                {% with messages = get_flashed_messages(category_filter=[m.id]) %}
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        <div class="pagination">
+            {% if movies.has_prev %}
+                <a href="{{ url_for('movies_search', page=movies.prev_num) }}">Previous</a>
+            {% endif %}
+            {% for page_num in movies.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != movies.page %}
+                        <a href="{{ url_for('movies_search', page=page_num) }}">{{ page_num }}</a>
+                    {% else %}
+                        <a class="active" href="#">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    <span class="ellipsis">...</span>
+                {% endif %}
+            {% endfor %}
+            {% if movies.has_next %}
+                <a href="{{ url_for('movies_search', page=movies.next_num) }}">Next</a>
+            {% endif %}
+        </div>
+
+        <!-- Scroll Position JavaScript -->
+        <script src="{{ url_for('static', filename='js/scroll_position.js')}}"></script>
+    {% else %}
+        <br> <br> <br>
+        <img src="{{ url_for('static', filename='img/sad_dog.jpeg') }}" alt="No Results found." height="500">
+    {% endif %}
+
+</div>
+{% endblock %}

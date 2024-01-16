@@ -257,6 +257,8 @@ def get_movie_metadata(
         if movie.id in all_ratings_dict:
             avg, count = all_ratings_dict[movie.id]
             average_ratings[movie.id] = (round(avg, 1), count)
+        else:
+            average_ratings[movie.id] = (0.0, 0)
 
         if get_user_ratings:
             # Get rating for each movie by the logged in user

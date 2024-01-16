@@ -16,6 +16,11 @@
                 <div class="row">
                     <!-- Display movie genres and tags -->
                     <div class="col-md-8">
+                        <!-- Display movie posters using OMDb API-->
+                        {% if m.links[0].imdb_id %}
+                            <img src="http://img.omdbapi.com/?i=tt{{ m.links[0].imdb_id }}&apikey=d911d61b" alt="Movie Poster" height="250">
+                        {% endif %}
+                        <br><br>
                         <p>
                             {% for g in m.genres %}
                                 <span class="label label-default">{{ g.genre }}</span>

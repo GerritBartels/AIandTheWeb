@@ -105,3 +105,10 @@ hr { border-color: #cccccc; margin: 0; }
 .no-margins { margin: 0px; }
 .with-margins { margin: 10px; }
 .col-centered { float: none; margin: 0 auto; }
+
+
+/* Search icon */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    color: var(--text-color);
+  }
