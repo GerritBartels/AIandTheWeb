@@ -280,3 +280,67 @@ def softmax(logits) -> np.array:
 
     exp = np.exp(logits)
     return exp / np.sum(exp)
+
+
+class CustomPagination:
+    """Custom pagination class. Needed because the default pagination class
+    doesn't support the lists, which are used on the movies search page.
+    """
+
+    def __init__(self, items: list, page: int, per_page: int, total: int) -> None:
+        """Initializes the CustomPagination class.
+        
+        Arguments:
+            items (list): The items to paginate.
+            page (int): The current page.
+            per_page (int): The number of items per page.
+            total (int): The total number of items.
+        """
+        
+        self.items = items
+        self.page = page
+        self.per_page = per_page
+        self.total = total
+
+    def __iter__(self) -> iter:
+        """Iterates over the items.
+        
+        Returns:
+            iter: The iterator.
+        """
+
+        return iter(self.items)
+
+    def iter_pages(self, left_edge: int=2, left_current: int=2, right_current: int=5, right_edge: int=2) -> int:
+        """Iterates over the pages. Needed for the pagination buttons. 
+
+        Arguments:
+            left_edge (int): The number of pages on the left edge.
+            left_current (int): The number of pages on the left side of the current page.
+            right_current (int): The number of pages on the right side of the current page.
+            right_edge (int): The number of pages on the right edge.
+
+        Yields:
+            int: The next page.
+        """
+
+        last = 0
+        for num in range(1, self.pages + 1):
+            if num <= left_edge or \
+               (num > self.page - left_current - 1 and \
+                num < self.page + right_current) or \
+               num > self.pages - right_edge:
+                if last + 1 != num:
+                    yield None
+                yield num
+                last = num
+
+    @property
+    def pages(self) -> int:
+        """The total number of pages.
+        
+        Returns:
+            int: The total number of pages.
+        """
+
+        return max(0, self.total - 1) // self.per_page + 1

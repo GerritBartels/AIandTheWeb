@@ -33,7 +33,7 @@ from sqlalchemy.exc import IntegrityError
 
 from models import db, User, Movie, MovieRatings
 from recommender_model import Recommender, train_model
-from utils import check_and_read_data, get_movie_metadata
+from utils import check_and_read_data, get_movie_metadata, CustomPagination
 
 # Register numpy int32 as a converter to sqlite3
 sqlite3.register_adapter(np.int32, lambda val: int(val))
@@ -177,7 +177,7 @@ def isinteger(value: any) -> bool:
 
 
 @user_registered.connect_via(app)
-def _after_register_hook(sender, user, **extra):
+def _after_register_hook(sender, user, **extra) -> None:
     """Adds the user to the recommender model after registration.
     In case the recommender model is being trained, the user is added after training.
 
@@ -249,33 +249,6 @@ def save_scroll() -> (str, int):
     """
     session["scroll_position"] = request.form.get("scroll_position")
     return "", 204
-
-
-class CustomPagination:
-    def __init__(self, items, page, per_page, total):
-        self.items = items
-        self.page = page
-        self.per_page = per_page
-        self.total = total
-
-    def __iter__(self):
-        return iter(self.items)
-
-    def iter_pages(self, left_edge=2, left_current=2, right_current=5, right_edge=2):
-        last = 0
-        for num in range(1, self.pages + 1):
-            if num <= left_edge or \
-               (num > self.page - left_current - 1 and \
-                num < self.page + right_current) or \
-               num > self.pages - right_edge:
-                if last + 1 != num:
-                    yield None
-                yield num
-                last = num
-
-    @property
-    def pages(self):
-        return max(0, self.total - 1) // self.per_page + 1
     
 
 @app.route("/movies", methods=["GET"])
@@ -307,7 +280,7 @@ def movies() -> str:
 
 @app.route("/movies_search", methods=["GET"])
 @login_required
-def movies_search():
+def movies_search() -> str:
     """Renders the movies search page. Displays 10 searched movies per page."""
     
     page = request.args.get("page", 1, type=int)
@@ -375,6 +348,7 @@ def rate_movie() -> Response:
     Returns:
         Response: Redirects to the movies page.
     """
+
     global new_ratings_counter
 
     movie_id = int(request.form["movie_id"])
@@ -513,7 +487,6 @@ def movie_recommender() -> str:
         movie_tags=movie_tags,
         average_ratings=average_ratings,
     )
-
 
 # Start development web server
 if __name__ == "__main__":
