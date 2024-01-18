@@ -430,7 +430,6 @@ def movie_recommender() -> str:
         np.concatenate((user_id - 1, unrated_movies - 1), axis=1)
     )
     predictions = recommender_model(data, training=False).numpy()
-    recommender_model.add_user()
 
     # Combine movie IDs and predictions into a dictionary and sort by prediction
     recommendations_dict = dict(zip(unrated_movies.flatten(), predictions.flatten()))
