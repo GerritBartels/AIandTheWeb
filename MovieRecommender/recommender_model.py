@@ -79,7 +79,8 @@ class Recommender(tf.keras.Model):
         user_vector = self.dropout1(user_vector, training=training)
         user_vector = self.batch_norm1(user_vector, training=training)
 
-        movie_vector = self.movie_embedding(inputs[:, 1], training=training)
+        movie_vector = self.movie_lookup(tf.as_string(inputs[:, 1]))
+        movie_vector = self.movie_embedding(movie_vector, training=training)
         movie_vector = self.dense2(movie_vector, training=training)
         movie_vector = self.dropout2(movie_vector, training=training)
         movie_vector = self.batch_norm2(movie_vector, training=training)
