@@ -1,0 +1,85 @@
+/* Code adapted from https://codepen.io/Raddy/pen/NojQmd */
+$itemGrow: 1.2;
+$duration: 250ms;
+
+html {
+  scroll-behavior: smooth;
+}
+
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(3,100%);
+  overflow:hidden;
+  scroll-behavior: smooth;
+  max-width: 1450px; 
+  margin: 0 auto; // This will center the container
+
+  section {
+    width: 100%;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(9, auto);
+    margin: 20px 0;
+    
+    .item {
+      padding: 0 2px;
+      transition: $duration all;
+      
+      &:hover { 
+        &:first-child {
+          margin-right: 40px;
+        }
+        &:last-child {
+          margin-left: 40px;
+        }
+        transform: scale(1.2);
+      }
+    }
+    
+    .arrow_btn_container {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 40px; 
+      background-color: rgba(35, 35, 37, 0.5); // Black with 50% transparency
+      z-index: 10; // Add a z-index to ensure the arrows appear above the movie covers
+
+      &:hover {
+        .arrow_btn_left {
+          left: 5px;
+        }
+        .arrow_btn_right {
+          right: 5px;
+        }
+      }
+    
+      .arrow_btn_left, .arrow_btn_right {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: all 0.3s ease;
+        z-index: 9;
+      }
+    }
+    
+    .arrow_btn_container_right {
+      right: 0;
+    }
+
+    .arrow_btn_left {
+      border-width: 15px 25px 15px 0; // Make the arrows a bit smaller
+      border-color: transparent #ffffff transparent transparent;
+      left: 7px;
+    }
+    
+    .arrow_btn_right {
+      border-width: 15px 0 15px 25px; // Make the arrows a bit smaller
+      border-color: transparent transparent transparent #ffffff;
+      right: 7px;
+    }  
+  }
+}

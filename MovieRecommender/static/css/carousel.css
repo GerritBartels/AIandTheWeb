@@ -1,0 +1,73 @@
+/* Code adapted from https://codepen.io/Raddy/pen/NojQmd */
+html {
+  scroll-behavior: smooth;
+}
+
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 100%);
+  overflow: hidden;
+  scroll-behavior: smooth;
+  max-width: 1450px;
+  margin: 0 auto;
+}
+.wrapper section {
+  width: 100%;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(9, auto);
+  margin: 20px 0;
+}
+.wrapper section .item {
+  padding: 0 2px;
+  transition: 250ms all;
+}
+.wrapper section .item:hover {
+  transform: scale(1.2);
+}
+.wrapper section .item:hover:first-child {
+  margin-right: 40px;
+}
+.wrapper section .item:hover:last-child {
+  margin-left: 40px;
+}
+.wrapper section .arrow_btn_container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background-color: rgba(35, 35, 37, 0.5);
+  z-index: 10;
+}
+.wrapper section .arrow_btn_container:hover .arrow_btn_left {
+  left: 5px;
+}
+.wrapper section .arrow_btn_container:hover .arrow_btn_right {
+  right: 5px;
+}
+.wrapper section .arrow_btn_container .arrow_btn_left, .wrapper section .arrow_btn_container .arrow_btn_right {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.3s ease;
+  z-index: 9;
+}
+.wrapper section .arrow_btn_container_right {
+  right: 0;
+}
+.wrapper section .arrow_btn_left {
+  border-width: 15px 25px 15px 0;
+  border-color: transparent #ffffff transparent transparent;
+  left: 7px;
+}
+.wrapper section .arrow_btn_right {
+  border-width: 15px 0 15px 25px;
+  border-color: transparent transparent transparent #ffffff;
+  right: 7px;
+}
+
+/*# sourceMappingURL=carousel.css.map */
