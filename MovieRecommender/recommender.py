@@ -13,6 +13,7 @@ os.chdir(__location__)
 
 import click
 import sqlite3
+import requests
 import datetime
 import numpy as np
 import tensorflow as tf
@@ -84,6 +85,8 @@ app.app_context().push()
 db.init_app(app)
 db.create_all()
 user_manager = UserManager(app, db, User)
+
+
 
 # Used to retrain the recommender model every n new ratings
 RETRAIN_EVERY = 100
@@ -234,8 +237,49 @@ def home_page() -> str:
     Returns:
         str: Rendered home page.
     """
+    
+    # Get top 24 movies based on average rating weighted by number of ratings
+    # i.e. a lot of ratings with a high average rating will be ranked higher than a few ratings with a high average rating
 
-    return render_template("home.html")
+    # Get average ratings and number of ratings for all movies
+    average_ratings = Movie.query.with_entities(Movie.avg_rating).all()
+    num_ratings = Movie.query.with_entities(Movie.num_ratings).all()
+    movie_ids = Movie.query.with_entities(Movie.id).all()
+    id_rating_dict = dict(zip(movie_ids, average_ratings))
+
+    # Center the average ratings around 0
+    average_ratings = np.asarray(average_ratings) - 2.5
+
+    # Normalize the number of ratings
+    num_ratings = np.asarray(num_ratings) / np.max(num_ratings)
+
+    # Calculate the sampling weights
+    sampling_weights = np.multiply(average_ratings, num_ratings)
+
+    # Add sampling weights to the values of the dictionary
+    for idx, (key, value) in enumerate(id_rating_dict.items()):
+        id_rating_dict[key] = value+sampling_weights[idx]
+
+    # Sort the dictionary by the values
+    id_rating_dict = dict(sorted(id_rating_dict.items(), key=lambda x: x[1], reverse=True))
+
+    # Get the top 24 movie IDs
+    sampled_indices = list(id_rating_dict.keys())[:24]
+
+    # Flatten the list of tuples to a list of integers
+    sampled_indices = [id[0] for id in sampled_indices]
+
+    # Query the database to get the movie objects
+    top_movies = Movie.query.filter(Movie.id.in_(sampled_indices)).all()
+
+
+    # Get 24 randomly sampled movies
+    sampled_indices = np.random.choice(np.asarray(movie_ids).flatten(), 24, replace=False)
+    sampled_indices = [int(id) for id in sampled_indices]
+    discover_movies = Movie.query.filter(Movie.id.in_(sampled_indices)).all()
+
+
+    return render_template("home.html", top_movies=top_movies, discover_movies=discover_movies)
 
 
 @app.route("/save_scroll", methods=["POST"])
@@ -249,7 +293,7 @@ def save_scroll() -> (str, int):
     """
     session["scroll_position"] = request.form.get("scroll_position")
     return "", 204
-    
+ 
 
 @app.route("/movies", methods=["GET"])
 @login_required
@@ -265,9 +309,13 @@ def movies() -> str:
     movies = Movie.query.paginate(page=page, per_page=10)
 
     # Get movie tags, average ratings, and user ratings
-    movie_tags, average_ratings, user_ratings = get_movie_metadata(
+    movie_tags, average_ratings, user_ratings, movie_plot_dict = get_movie_metadata(
         db=db, movies=movies, current_user=current_user
     )
+
+    # Add the movie info to the movie objects
+    for m in movies:
+        m.movie_info = movie_plot_dict[m.id]
 
     return render_template(
         "movies.html",
@@ -326,9 +374,13 @@ def movies_search() -> str:
 
     movies = CustomPagination(movies, page, 10, total)
 
-    movie_tags, average_ratings, user_ratings = get_movie_metadata(
+    movie_tags, average_ratings, user_ratings, movie_plot_dict  = get_movie_metadata(
         db=db, movies=movies, current_user=current_user
     )
+
+    # Add the movie info to the movie objects
+    for m in movies:
+        m.movie_info = movie_plot_dict[m.id]
 
     return render_template(
         "movies_search.html",
@@ -437,8 +489,9 @@ def movie_recommender() -> str:
         sorted(recommendations_dict.items(), key=lambda x: x[1], reverse=True)
     )
 
-    # Get the top 50 recommendations, their movie objects and metadata
-    recommendation_ids = list(recommendations_dict.keys())[:50]
+    # Get the top 30 recommendations, their movie objects and metadata
+    recommendation_ids = list(recommendations_dict.keys())[:30]
+    recommendation_ids = [int(id) for id in recommendation_ids]
 
     # Define the ordering
     order = case(
@@ -447,7 +500,7 @@ def movie_recommender() -> str:
     movie_recommendations = (
         Movie.query.filter(Movie.id.in_(recommendation_ids)).order_by(order).all()
     )
-    movie_tags, average_ratings, _ = get_movie_metadata(
+    movie_tags, average_ratings, _, movie_plot_dict = get_movie_metadata(
         db=db,
         movies=movie_recommendations,
         current_user=current_user,
@@ -462,13 +515,16 @@ def movie_recommender() -> str:
     min_val = min(rating_weights.values())
     max_val = max(rating_weights.values())
 
+    # Get recommendations based on the keys from the rating_weights dictionary
+    utilities = [recommendations_dict[key] for key in rating_weights.keys()]
+
     # Apply min-max normalization and add a small random value to each rating for diversity
     rating_weights = {
         key: (((value - min_val) / (max_val - min_val)) * 0.05)
         + utility
         + np.random.uniform(0, 0.05)
         for (key, value), utility in zip(
-            rating_weights.items(), list(recommendations_dict.values())[:200]
+            rating_weights.items(), utilities
         )
     }
     rating_weights = dict(
@@ -479,6 +535,10 @@ def movie_recommender() -> str:
     movie_recommendations = (
         Movie.query.filter(Movie.id.in_(list(rating_weights))).order_by(order).all()
     )
+
+    # Add the movie info to the movie objects
+    for m in movie_recommendations:
+        m.movie_info = movie_plot_dict[m.id]
 
     return render_template(
         "movie_recommender.html",

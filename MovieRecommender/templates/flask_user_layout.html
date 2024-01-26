@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ user_manager.USER_APP_NAME }}</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" 
+          href="{{ url_for('static', filename='img/logo.png')}}">
+
     <!-- Bootstrap -->
     <link rel="stylesheet"
           href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" >
@@ -13,7 +17,10 @@
     <!-- Custom Stylesheet -->
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/styles.css')}}">
-          
+
+    <!-- Custom JS for Burger Menu -->
+    <script src="{{ url_for('static', filename='js/burger_menu.js')}}"></script>
+
     <!-- Material Symbols Outlined Font -->
     <link rel="stylesheet" 
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -34,23 +41,44 @@
 <body>
     {% block body %}
     <div id="header-div" class="clearfix with-margins">
-        <div class="pull-left"><a href="{{ url_for('home_page') }}"><h1 class="no-margins">{{ user_manager.USER_APP_NAME }}</h1></a></div>
-        <div class="pull-right">
-            {% if call_or_get(current_user.is_authenticated) %}
-                <a href="{{ url_for('user.edit_user_profile') }}">{{ current_user.username or current_user.email }}</a>
-                &nbsp; | &nbsp;
-                <a href="{{ url_for('user.logout') }}">{%trans%}Sign out{%endtrans%}</a>
-            {% else %}
-                <a href="{{ url_for('user.login') }}">{%trans%}Sign in{%endtrans%}</a>
-            {% endif %}
+        <div style="position: relative;">
+            <!-- Burger Menu -->
+            <div style="position: absolute; top: 0; left: 0;">
+                <div id="burger-menu" onclick="toggleNav()">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div id="mySidenav" class="sidenav">
+                    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+                    {% if call_or_get(current_user.is_authenticated) %}
+                        <a href="{{ url_for('user.edit_user_profile') }}">{{ current_user.username or current_user.email }}</a>
+                        <a href="{{ url_for('movies') }}">Movies</a>
+                        <a href="{{ url_for('movie_recommender') }}">Movie Recommender</a>
+                        <a href="{{ url_for('user.logout') }}">{%trans%}Sign out{%endtrans%}</a>
+                    {% else %}
+                        <a href="{{ url_for('user.register') }}">Register</a>
+                        <a href="{{ url_for('user.login') }}">{%trans%}Sign in{%endtrans%}</a>
+                        <a href="{{ url_for('movies') }}">Movies</a>
+                        <a href="{{ url_for('movie_recommender') }}">Movie Recommender</a>
+                    {% endif %}
+                  </div>
+            </div>
+            <!-- Logo -->
+            <div class="logo-container"><a href="{{ url_for('home_page') }}"> <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Movie Recommender Logo" class="logo"></a></div>
+            <!-- Login/Logout Button -->
+            <div class="pull-right" style="position: absolute; top: 0; right: 0;">
+                {% if call_or_get(current_user.is_authenticated) %}
+                    <a href="{{ url_for('user.edit_user_profile') }}">{{ current_user.username or current_user.email }}</a>
+                    &nbsp; | &nbsp;
+                    <a href="{{ url_for('user.logout') }}">{%trans%}Sign out{%endtrans%}</a>
+                {% else %}
+                    <a href="{{ url_for('user.login') }}">{%trans%}Sign in{%endtrans%}</a>
+                {% endif %}
+            </div>
         </div>
     </div>
-    {% block menu %}
-    <div id="menu-div" class="with-margins">
-        <a href="{{ url_for('home_page') }}">{%trans%}Home page{%endtrans%}</a>
-    </div>
-    {% endblock %}
-    <hr class="no-margins"/>
+    
 
     <div id="main-div" class="with-margins">
     {# One-time system messages called Flash messages #}
@@ -75,19 +103,23 @@
     </div>
 
     <br/>
-    <hr class="no-margins"/>
     <div id="footer-div" class="clearfix with-margins">
-        <div class="pull-left">{{ user_manager.USER_APP_NAME }} {{ user_manager.USER_APP_VERSION }}</div>
-        <div class="pull-right">Just practicing... CogSci Osnabrück 2023</div>
+        <hr class="no-margins"/>
+        <div class="pull-left custom-footer">{{ user_manager.USER_APP_NAME }} {{ user_manager.USER_APP_VERSION }}</div>
+        <div class="pull-right custom-footer">We got all your favorite movies 😉</div>
     </div>
     {% endblock %}
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+
     <!-- Bootstrap -->
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+   
     <!-- Custom Flash Messages JavaScript -->
     <script src="{{ url_for('static', filename='js/flash_messages.js')}}"></script>
+    
+    
 
 
     {# *** Allow sub-templates to insert extra html to the bottom of the body *** #}

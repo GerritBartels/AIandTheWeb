@@ -1,8 +1,13 @@
 {% extends "flask_user_layout.html" %}
 {% block content %}
-<div class="container">
-    <h2>Movies</h2>
 
+<br><br><br>
+<div class="custom-header custom-header-recommendations">
+    YOUR RECOMMENDATIONS
+</div>
+<br><br><br><br>
+
+<div class="container">
     {% for m in movie_recommendations %}
     <div class="panel panel-default">
         <!-- Display movie title, average rating and number of votes -->
@@ -16,9 +21,15 @@
                 <div class="row">
                     <!-- Display movie genres and tags -->
                     <div class="col-md-8">
-                        <!-- Display movie posters using OMDb API-->
+                        <!-- Display movie posters and plot description using OMDb API-->
+                        <!-- Display movie posters and plot description using OMDb API-->
                         {% if m.links[0].imdb_id %}
-                            <img src="http://img.omdbapi.com/?i=tt{{ m.links[0].imdb_id }}&apikey=d911d61b" alt="Movie Poster" height="250">
+                        <div style="display: flex;">
+                            <img src="http://img.omdbapi.com/?i=tt{{ m.links[0].imdb_id }}&apikey=" alt="Movie Poster" height="250">
+                            <p style="margin-left: 80px;" class="plot-description">
+                                {{ m.movie_info['Plot'] or 'No Description Available' }}
+                            </p>
+                        </div>
                         {% endif %}
                         <br><br>
                         <p>

@@ -1,16 +1,20 @@
 {% extends "flask_user_layout.html" %}
 {% block content %}
-<div class="container">
-    <h2>Movies</h2>
-    <form action="{{ url_for('movies_search') }}" method="GET">
-        <input type="text" name="query" placeholder="Search...">
-        <button type="submit" class="material-symbols-outlined">
-          <span class="material-symbols-outlined">
-            Search
-          </span>
-        </button>
-    </form>
 
+<br><br><br>
+<div class="custom-header">
+    MOVIES
+</div>
+<br><br><br>
+
+
+
+<div class="container">
+    <div class="custom-button search-form search-form-movies">
+        <form action="{{ url_for('movies_search') }}" method="GET">
+            <input type="text" name="query" placeholder="Search..." class="custom-button-input">
+        </form>
+    </div>
     {% for m in movies.items %}
     <div class="panel panel-default">
         <!-- Display movie title, average rating and number of votes -->
@@ -24,11 +28,16 @@
                 <div class="row">
                     <!-- Display movie genres and tags -->
                     <div class="col-md-8">
-                        <!-- Display movie posters using OMDb API-->
+                        <!-- Display movie posters and plot description using OMDb API-->
                         {% if m.links[0].imdb_id %}
-                            <img src="http://img.omdbapi.com/?i=tt{{ m.links[0].imdb_id }}&apikey=d911d61b" alt="Movie Poster" height="250">
+                        <div style="display: flex;">
+                            <img src="http://img.omdbapi.com/?i=tt{{ m.links[0].imdb_id }}&apikey=" alt="Movie Poster" height="250">
+                            <p style="margin-left: 80px;" class="plot-description">
+                                {{ m.movie_info['Plot'] or 'No Description Available' }}
+                            </p>
+                        </div>
                         {% endif %}
-                        <br><br>
+                        <br>
                         <p>
                             {% for g in m.genres %}
                                 <span class="label label-default">{{ g.genre }}</span>
