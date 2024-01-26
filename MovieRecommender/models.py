@@ -46,6 +46,8 @@ class Movie(db.Model):
     links = db.relationship("MovieLinks", backref="movie", lazy=True)
     tags = db.relationship("MovieTags", backref="movie", lazy=True)
     ratings = db.relationship("MovieRatings", backref="movie", lazy=True)
+    avg_rating = db.Column(db.Float, nullable=False, server_default="0.0")
+    num_ratings = db.Column(db.Integer, nullable=False, server_default="0")
 
 
 class MovieGenre(db.Model):

@@ -1,5 +1,7 @@
 import csv
+import requests
 import datetime
+import threading
 import flask_user
 import numpy as np
 import flask_sqlalchemy
@@ -138,6 +140,8 @@ def check_and_read_data(
 
         print("\nFinished reading in tags \n")
 
+    dict_for_avg: dict[str, list] = {}
+
     if MovieRatings.query.count() == 0:
         with open("data/ratings.csv", newline="", encoding="utf8") as csvfile:
             reader = csv.reader(csvfile, delimiter=",")
@@ -173,6 +177,13 @@ def check_and_read_data(
                         )
                         db.session.add(movie_rating)
 
+                        # Sum ratings for each movie and count the number of ratings
+                        if movie_id in dict_for_avg:
+                            dict_for_avg[movie_id][0] += float(rating)
+                            dict_for_avg[movie_id][1] += 1
+                        else:
+                            dict_for_avg[movie_id] = [float(rating), 1]
+
                         # Commit every 2000 rows
                         if count % 2000 == 0:
                             db.session.commit()
@@ -198,11 +209,29 @@ def check_and_read_data(
         print("\nFinished reading in ratings \n")
 
 
+    print("Updating average ratings...")
+
+    # Update average ratings for each movie
+    for movie_id, (rating_sum, rating_count) in dict_for_avg.items():
+        movie = Movie.query.filter_by(id=movie_id).first()
+        if movie is not None:
+            movie.avg_rating = round(rating_sum / rating_count, 4)
+            movie.num_ratings = rating_count
+    db.session.commit()
+    
+    print("Finished updating average ratings \n")
+
+
+def fetch_movie_info(movie_info_url, movie_id, session, movie_info_dict):
+    movie_info_dict[movie_id] = session.get(movie_info_url).json()
+
+
 def get_movie_metadata(
     db: flask_sqlalchemy.extension.SQLAlchemy,
     movies: list,
     current_user: User,
     get_user_ratings: bool = True,
+    get_movie_plot: bool = True,
 ) -> (dict, dict, dict):
     """Gets movie metadata from the database, i.e., tags, average ratings, and user ratings.
 
@@ -221,6 +250,7 @@ def get_movie_metadata(
     movie_tags = {}
     average_ratings = {}
     user_ratings = {}
+    movie_plot_dict = {}
 
     # Fetch all ratings for all movies in one go
     all_ratings = (
@@ -245,6 +275,12 @@ def get_movie_metadata(
             rating.movie_id: rating.rating for rating in all_user_ratings
         }
 
+    # Create a list to hold all the threads and 
+    # a dictionary to hold the movie plot descriptions
+    if get_movie_plot:
+        request_session = requests.Session()
+        threads = []
+
     for movie in movies:
         # Get movie tags for each movie, sort them by tag count first and then alphabetically
         if movie.tags:
@@ -265,7 +301,22 @@ def get_movie_metadata(
             if movie.id in all_user_ratings_dict:
                 user_ratings[movie.id] = all_user_ratings_dict[movie.id]
 
-    return movie_tags, average_ratings, user_ratings
+        if get_movie_plot:
+            if movie.links[0].imdb_id:
+                movie_info_url = f"http://www.omdbapi.com/?i=tt{movie.links[0].imdb_id}&apikey="
+                thread = threading.Thread(target=fetch_movie_info, args=(movie_info_url, movie.id, request_session, movie_plot_dict))
+                threads.append(thread)
+
+    if get_movie_plot:
+        # Start all threads
+        for thread in threads:
+            thread.start()
+
+        # Wait for all threads to finish
+        for thread in threads:
+            thread.join()
+
+    return movie_tags, average_ratings, user_ratings, movie_plot_dict
 
 
 def softmax(logits) -> np.array:
