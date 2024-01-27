@@ -238,40 +238,32 @@ def home_page() -> str:
         str: Rendered home page.
     """
     
-    # Get top 24 movies based on average rating weighted by number of ratings
-    # i.e. a lot of ratings with a high average rating will be ranked higher than a few ratings with a high average rating
+    # Get top 24 movies based on average rating weighted by number of ratings (their popularity)
+    # i.e. a movie with a lot of ratings and a high average rating will be ranked higher than 
+    # one with a few ratings and a high average rating
 
-    # Get average ratings and number of ratings for all movies
-    average_ratings = Movie.query.with_entities(Movie.avg_rating).all()
-    num_ratings = Movie.query.with_entities(Movie.num_ratings).all()
-    movie_ids = Movie.query.with_entities(Movie.id).all()
+    # Query the database
+    results = Movie.query.with_entities(Movie.id, Movie.avg_rating, Movie.num_ratings).all()
+    movie_ids, average_ratings, num_ratings = zip(*results)
     id_rating_dict = dict(zip(movie_ids, average_ratings))
 
-    # Center the average ratings around 0
+    # Center the average ratings around 0, normalize the number of 
+    # ratings and calculate sampling weights
     average_ratings = np.asarray(average_ratings) - 2.5
-
-    # Normalize the number of ratings
     num_ratings = np.asarray(num_ratings) / np.max(num_ratings)
-
-    # Calculate the sampling weights
     sampling_weights = np.multiply(average_ratings, num_ratings)
 
     # Add sampling weights to the values of the dictionary
     for idx, (key, value) in enumerate(id_rating_dict.items()):
         id_rating_dict[key] = value+sampling_weights[idx]
 
-    # Sort the dictionary by the values
+    # Sort the dictionary by the values and get the top 24 movie IDs
     id_rating_dict = dict(sorted(id_rating_dict.items(), key=lambda x: x[1], reverse=True))
-
-    # Get the top 24 movie IDs
     sampled_indices = list(id_rating_dict.keys())[:24]
 
-    # Flatten the list of tuples to a list of integers
-    sampled_indices = [id[0] for id in sampled_indices]
-
-    # Query the database to get the movie objects
+    # Query the database to get the movie objects and sort to keep the order of sampled_indices
     top_movies = Movie.query.filter(Movie.id.in_(sampled_indices)).all()
-
+    top_movies.sort(key=lambda movie: sampled_indices.index(movie.id))
 
     # Get 24 randomly sampled movies
     sampled_indices = np.random.choice(np.asarray(movie_ids).flatten(), 24, replace=False)
