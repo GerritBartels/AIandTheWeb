@@ -4,6 +4,7 @@ This project is a movie recommender system developed using Flask, Flask-User, Fl
 
 ## Showcase
 
+![Movie_Recommender_Demo](https://github.com/GerritBartels/AIandTheWeb/assets/64156238/b2693f09-06d6-49db-9bc8-fe99253d8e6e)
 
 
 ## Features
