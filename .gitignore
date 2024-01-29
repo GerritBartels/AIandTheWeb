@@ -164,3 +164,7 @@ cython_debug/
 
 # Index folder of SearchEngine
 SearchEngine/index/
+
+# Instance and Weights folder of MovieRecommender
+MovieRecommender/weights/
+MovieRecommender/instance/

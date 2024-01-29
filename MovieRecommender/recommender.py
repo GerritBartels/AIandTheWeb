@@ -72,10 +72,10 @@ class ConfigClass(object):
     USER_REQUIRE_RETYPE_PASSWORD = True
 
     # Make sure that the user is redirected to the home page after login, logout, etc.
-    USER_AFTER_REGISTER_ENDPOINT = 'home_page'
-    USER_AFTER_CONFIRM_ENDPOINT = 'home_page'
-    USER_AFTER_LOGIN_ENDPOINT = 'home_page'
-    USER_AFTER_LOGOUT_ENDPOINT = 'home_page'
+    USER_AFTER_REGISTER_ENDPOINT = "home_page"
+    USER_AFTER_CONFIRM_ENDPOINT = "home_page"
+    USER_AFTER_LOGIN_ENDPOINT = "home_page"
+    USER_AFTER_LOGOUT_ENDPOINT = "home_page"
 
 
 # Create Flask app
@@ -85,7 +85,6 @@ app.app_context().push()
 db.init_app(app)
 db.create_all()
 user_manager = UserManager(app, db, User)
-
 
 
 # Used to retrain the recommender model every n new ratings
@@ -238,17 +237,19 @@ def home_page() -> str:
     Returns:
         str: Rendered home page.
     """
-    
+
     # Get top 24 movies based on average rating weighted by number of ratings (their popularity)
-    # i.e. a movie with a lot of ratings and a high average rating will be ranked higher than 
+    # i.e. a movie with a lot of ratings and a high average rating will be ranked higher than
     # one with a few ratings and a high average rating
 
     # Query the database
-    results = Movie.query.with_entities(Movie.id, Movie.avg_rating, Movie.num_ratings).all()
+    results = Movie.query.with_entities(
+        Movie.id, Movie.avg_rating, Movie.num_ratings
+    ).all()
     movie_ids, average_ratings, num_ratings = zip(*results)
     id_rating_dict = dict(zip(movie_ids, average_ratings))
 
-    # Center the average ratings around 0, normalize the number of 
+    # Center the average ratings around 0, normalize the number of
     # ratings and calculate sampling weights
     average_ratings = np.asarray(average_ratings) - 2.5
     num_ratings = np.asarray(num_ratings) / np.max(num_ratings)
@@ -256,10 +257,12 @@ def home_page() -> str:
 
     # Add sampling weights to the values of the dictionary
     for idx, (key, value) in enumerate(id_rating_dict.items()):
-        id_rating_dict[key] = value+sampling_weights[idx]
+        id_rating_dict[key] = value + sampling_weights[idx]
 
     # Sort the dictionary by the values and get the top 24 movie IDs
-    id_rating_dict = dict(sorted(id_rating_dict.items(), key=lambda x: x[1], reverse=True))
+    id_rating_dict = dict(
+        sorted(id_rating_dict.items(), key=lambda x: x[1], reverse=True)
+    )
     sampled_indices = list(id_rating_dict.keys())[:24]
 
     # Query the database to get the movie objects and sort to keep the order of sampled_indices
@@ -267,12 +270,15 @@ def home_page() -> str:
     top_movies.sort(key=lambda movie: sampled_indices.index(movie.id))
 
     # Get 24 randomly sampled movies
-    sampled_indices = np.random.choice(np.asarray(movie_ids).flatten(), 24, replace=False)
+    sampled_indices = np.random.choice(
+        np.asarray(movie_ids).flatten(), 24, replace=False
+    )
     sampled_indices = [int(id) for id in sampled_indices]
     discover_movies = Movie.query.filter(Movie.id.in_(sampled_indices)).all()
 
-
-    return render_template("home.html", top_movies=top_movies, discover_movies=discover_movies)
+    return render_template(
+        "home.html", top_movies=top_movies, discover_movies=discover_movies
+    )
 
 
 @app.route("/save_scroll", methods=["POST"])
@@ -287,7 +293,7 @@ def save_scroll() -> (str, int):
     """
     session["scroll_position"] = request.form.get("scroll_position")
     return "", 204
- 
+
 
 @app.route("/movies", methods=["GET"])
 @login_required
@@ -338,17 +344,29 @@ def movies_search() -> Union[redirect, str]:
         all_movies = Movie.query.all()
 
         # Calculate fuzzy ratios and store them with the corresponding movie in a list of tuples
-        movie_ratios = [(movie, fuzz.ratio(movie.title.lower(), search_query.lower())) for movie in all_movies]
+        movie_ratios = [
+            (movie, fuzz.ratio(movie.title.lower(), search_query.lower()))
+            for movie in all_movies
+        ]
 
         # Sort the list of tuples based on the fuzzy ratio
         movie_ratios.sort(key=lambda x: x[1], reverse=True)
 
         # Find the index where the fuzzy ratio falls below the threshold
         threshold = 45  # Set your desired threshold here
-        index = next((index for index, (movie, ratio) in enumerate(movie_ratios) if ratio < threshold), len(movie_ratios))
+        index = next(
+            (
+                index
+                for index, (movie, ratio) in enumerate(movie_ratios)
+                if ratio < threshold
+            ),
+            len(movie_ratios),
+        )
 
         # Discard movies that don't meet the threshold and store their IDs in the session
-        session["all_searched_movie_ids"] = [movie.id for movie, ratio in movie_ratios[:index]]
+        session["all_searched_movie_ids"] = [
+            movie.id for movie, ratio in movie_ratios[:index]
+        ]
 
     # If no search query was provided, redirect to the movies page
     # If no movies were found, display a flash message
@@ -358,10 +376,16 @@ def movies_search() -> Union[redirect, str]:
 
     elif len(session["all_searched_movie_ids"]) == 0:
         flash("No movies were found", "error")
-        return render_template("movies_search.html", movies={}, movie_tags={}, average_ratings={}, user_ratings={})
+        return render_template(
+            "movies_search.html",
+            movies={},
+            movie_tags={},
+            average_ratings={},
+            user_ratings={},
+        )
 
     total = len(session["all_searched_movie_ids"])
-    movie_ids = session["all_searched_movie_ids"][(page-1)*10 : page*10]
+    movie_ids = session["all_searched_movie_ids"][(page - 1) * 10 : page * 10]
 
     # Query the database to get the movie objects
     movies = Movie.query.filter(Movie.id.in_(movie_ids)).all()
@@ -374,7 +398,7 @@ def movies_search() -> Union[redirect, str]:
 
     movies = CustomPagination(movies, page, 10, total)
 
-    movie_tags, average_ratings, user_ratings, movie_plot_dict  = get_movie_metadata(
+    movie_tags, average_ratings, user_ratings, movie_plot_dict = get_movie_metadata(
         db=db, movies=movies, current_user=current_user
     )
 
@@ -384,7 +408,7 @@ def movies_search() -> Union[redirect, str]:
 
     return render_template(
         "movies_search.html",
-        movies=movies, 
+        movies=movies,
         movie_tags=movie_tags,
         average_ratings=average_ratings,
         user_ratings=user_ratings,
@@ -523,9 +547,7 @@ def movie_recommender() -> str:
         key: (((value - min_val) / (max_val - min_val)) * 0.05)
         + utility
         + np.random.uniform(0, 0.05)
-        for (key, value), utility in zip(
-            rating_weights.items(), utilities
-        )
+        for (key, value), utility in zip(rating_weights.items(), utilities)
     }
     rating_weights = dict(
         sorted(rating_weights.items(), key=lambda x: x[1], reverse=True)
@@ -546,6 +568,7 @@ def movie_recommender() -> str:
         movie_tags=movie_tags,
         average_ratings=average_ratings,
     )
+
 
 # Start development web server
 if __name__ == "__main__":

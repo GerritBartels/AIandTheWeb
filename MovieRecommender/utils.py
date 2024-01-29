@@ -208,7 +208,6 @@ def check_and_read_data(
 
         print("\nFinished reading in ratings \n")
 
-
     print("Updating average ratings...")
 
     # Update average ratings for each movie
@@ -218,7 +217,7 @@ def check_and_read_data(
             movie.avg_rating = round(rating_sum / rating_count, 4)
             movie.num_ratings = rating_count
     db.session.commit()
-    
+
     print("Finished updating average ratings \n")
 
 
@@ -314,8 +313,13 @@ def get_movie_metadata(
         # Get movie plot description for each movie
         if get_movie_plot:
             if movie.links[0].imdb_id:
-                movie_info_url = f"http://www.omdbapi.com/?i=tt{movie.links[0].imdb_id}&apikey="
-                thread = threading.Thread(target=fetch_movie_info, args=(movie_info_url, movie.id, request_session, movie_plot_dict))
+                movie_info_url = (
+                    f"http://www.omdbapi.com/?i=tt{movie.links[0].imdb_id}&apikey="
+                )
+                thread = threading.Thread(
+                    target=fetch_movie_info,
+                    args=(movie_info_url, movie.id, request_session, movie_plot_dict),
+                )
                 threads.append(thread)
 
     if get_movie_plot:
@@ -351,14 +355,14 @@ class CustomPagination:
 
     def __init__(self, items: list, page: int, per_page: int, total: int) -> None:
         """Initializes the CustomPagination class.
-        
+
         Arguments:
             items (list): The items to paginate.
             page (int): The current page.
             per_page (int): The number of items per page.
             total (int): The total number of items.
         """
-        
+
         self.items = items
         self.page = page
         self.per_page = per_page
@@ -366,15 +370,21 @@ class CustomPagination:
 
     def __iter__(self) -> iter:
         """Iterates over the items.
-        
+
         Returns:
             iter: The iterator.
         """
 
         return iter(self.items)
 
-    def iter_pages(self, left_edge: int=2, left_current: int=2, right_current: int=5, right_edge: int=2) -> int:
-        """Iterates over the pages. Needed for the pagination buttons. 
+    def iter_pages(
+        self,
+        left_edge: int = 2,
+        left_current: int = 2,
+        right_current: int = 5,
+        right_edge: int = 2,
+    ) -> int:
+        """Iterates over the pages. Needed for the pagination buttons.
 
         Arguments:
             left_edge (int): The number of pages on the left edge.
@@ -388,10 +398,14 @@ class CustomPagination:
 
         last = 0
         for num in range(1, self.pages + 1):
-            if num <= left_edge or \
-               (num > self.page - left_current - 1 and \
-                num < self.page + right_current) or \
-               num > self.pages - right_edge:
+            if (
+                num <= left_edge
+                or (
+                    num > self.page - left_current - 1
+                    and num < self.page + right_current
+                )
+                or num > self.pages - right_edge
+            ):
                 if last + 1 != num:
                     yield None
                 yield num
@@ -400,7 +414,7 @@ class CustomPagination:
     @property
     def pages(self) -> int:
         """The total number of pages.
-        
+
         Returns:
             int: The total number of pages.
         """
