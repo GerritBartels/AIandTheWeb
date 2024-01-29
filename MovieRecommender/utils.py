@@ -222,7 +222,15 @@ def check_and_read_data(
     print("Finished updating average ratings \n")
 
 
-def fetch_movie_info(movie_info_url, movie_id, session, movie_info_dict):
+def fetch_movie_info(movie_info_url: str, movie_id: int, session: requests.Session, movie_info_dict: dict):
+    """Fetches movie plot description from the OMDB API. This function is used in a thread.
+    
+    Arguments:
+        movie_info_url (str): The movie info URL.
+        movie_id (int): The movie ID.
+        session (requests.Session): The requests session.
+        movie_info_dict (dict): The dictionary to store the movie info.
+    """
     movie_info_dict[movie_id] = session.get(movie_info_url).json()
 
 
@@ -240,11 +248,13 @@ def get_movie_metadata(
         movies (list): A list of Movie objects.
         current_user (User): The current user.
         get_user_ratings (bool): Whether to get ratings for the current user.
+        get_movie_plot (bool): Whether to get movie plot descriptions.
 
     Returns:
         movie_tags (dict): A dictionary of movie tags.
         average_ratings (dict): A dictionary of average ratings.
         user_ratings (dict): A dictionary of user ratings.
+        movie_plot_dict (dict): A dictionary of movie plot descriptions.
     """
 
     movie_tags = {}
@@ -275,8 +285,8 @@ def get_movie_metadata(
             rating.movie_id: rating.rating for rating in all_user_ratings
         }
 
-    # Create a list to hold all the threads and 
-    # a dictionary to hold the movie plot descriptions
+    # Create a list to hold all the threads 
+    # and a session for each thread
     if get_movie_plot:
         request_session = requests.Session()
         threads = []
@@ -296,11 +306,12 @@ def get_movie_metadata(
         else:
             average_ratings[movie.id] = (0.0, 0)
 
+        # Get rating for each movie by the logged in user
         if get_user_ratings:
-            # Get rating for each movie by the logged in user
             if movie.id in all_user_ratings_dict:
                 user_ratings[movie.id] = all_user_ratings_dict[movie.id]
 
+        # Get movie plot description for each movie
         if get_movie_plot:
             if movie.links[0].imdb_id:
                 movie_info_url = f"http://www.omdbapi.com/?i=tt{movie.links[0].imdb_id}&apikey="

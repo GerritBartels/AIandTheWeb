@@ -13,9 +13,9 @@ os.chdir(__location__)
 
 import click
 import sqlite3
-import requests
 import datetime
 import numpy as np
+from typing import Union
 import tensorflow as tf
 from threading import Lock
 from fuzzywuzzy import fuzz
@@ -232,7 +232,8 @@ scheduler.start()
 
 @app.route("/")
 def home_page() -> str:
-    """Renders the home page.
+    """Renders the home page. Displays two carousels with the 
+    top 24 movies and 24 randomly sampled movies.
 
     Returns:
         str: Rendered home page.
@@ -277,7 +278,8 @@ def home_page() -> str:
 @app.route("/save_scroll", methods=["POST"])
 def save_scroll() -> (str, int):
     """Saves the scroll position of the movies page.
-    Needed because rating a movie redirects to the movies page and the scroll position is lost otherwise.
+    Needed because rating a movie redirects to the movies page 
+    as the scroll position is lost otherwise.
 
     Returns:
         str: Empty string.
@@ -291,7 +293,7 @@ def save_scroll() -> (str, int):
 @login_required
 def movies() -> str:
     """Renders the movies page. Displays the 10 movies on the current page
-    as well as their tags, average ratings, and the logged in user's rating.
+    as well as their meta data and the logged in user's rating.
 
     Returns:
         str: Rendered movies page.
@@ -320,8 +322,14 @@ def movies() -> str:
 
 @app.route("/movies_search", methods=["GET"])
 @login_required
-def movies_search() -> str:
-    """Renders the movies search page. Displays 10 searched movies per page."""
+def movies_search() -> Union[redirect, str]:
+    """Renders the movies search page. Displays 10 searched movies per page 
+    as well as their meta data.
+    
+    Returns:
+        Union[redirect, str]: Rendered movies search page or redirect to
+            the movies page if no search term was provided.
+    """
     
     page = request.args.get("page", 1, type=int)
     search_query = request.args.get("query", "", type=str)
