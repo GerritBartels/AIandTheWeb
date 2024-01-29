@@ -315,7 +315,7 @@ def movies() -> str:
 
     # Add the movie info to the movie objects
     for m in movies:
-        m.movie_info = movie_plot_dict[m.id]
+        m.movie_info = movie_plot_dict.get(m.id)
 
     return render_template(
         "movies.html",
@@ -404,7 +404,7 @@ def movies_search() -> Union[redirect, str]:
 
     # Add the movie info to the movie objects
     for m in movies:
-        m.movie_info = movie_plot_dict[m.id]
+        m.movie_info = movie_plot_dict.get(m.id)
 
     return render_template(
         "movies_search.html",
@@ -560,7 +560,7 @@ def movie_recommender() -> str:
 
     # Add the movie info to the movie objects
     for m in movie_recommendations:
-        m.movie_info = movie_plot_dict[m.id]
+        m.movie_info = movie_plot_dict.get(m.id)
 
     return render_template(
         "movie_recommender.html",
