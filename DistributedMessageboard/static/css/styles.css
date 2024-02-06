@@ -1,0 +1,85 @@
+/* Color scheme */
+:root {
+    --left-panel-color: rgb(35, 35, 37);
+    --right-panel-color: rgb(43, 43, 45);
+    --banner-color: rgb(27, 27, 28);
+    --text-color: #f2ede7;
+}
+  
+/* Global styles */
+body {
+    font-family: Montserrat, sans-serif;
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+}
+
+/* Prevent scrolling on the entire page */
+body, html {
+    overflow: hidden;
+}
+
+/* Chat Interface */
+
+/* Banner */
+.banner {
+    background-color: var(--banner-color);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 5px;
+    padding-left: 20px;
+    font-size: 10px;
+    color: var(--text-color);
+}
+
+.banner .logo {
+    margin-right: 10px;
+    height: 50px; /* Adjust as needed */
+}
+
+/* Left Panel */
+.left-panel {
+    background-color: var(--left-panel-color);
+    width: 25%;
+    height: calc(100vh - 50px); /* Subtracting the height of the banner */
+    position: fixed;
+    overflow: auto;
+}
+.left-panel h2 {
+    margin: 0;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--text-color);
+}
+.left-panel-text {
+    padding-left: 20px;
+}
+
+/* Right Panel */
+.right-panel {
+    background-color: var(--right-panel-color);
+    width: 75%;
+    height: calc(100vh - 50px); /* Subtracting the height of the banner */
+    position: absolute;
+    right: 0;
+    overflow: auto;
+}
+
+/* Channel */
+.channel {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--text-color);
+}
+
+.channel a {
+    display: block;
+    color: inherit; /* Inherit the color of the parent element */
+    text-decoration: none; /* Remove underline */
+}
+
+/* Message */
+.message {
+    padding: 10px;
+    border-bottom: 1px solid var(--text-color);
+}

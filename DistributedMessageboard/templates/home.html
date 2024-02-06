@@ -1,18 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>List of channels</title>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8">
+        <title>List of channels</title>
+        
+        <!-- Custom Stylesheet -->
+        <link rel="stylesheet"
+            href="{{ url_for('static', filename='css/styles.css')}}">
+    </head>
+    <body>
 
-<h1>List of message channels</h1>
+        <div class="banner">
+            <img src="{{ url_for('static', filename='img/Logo_chat.png')}}" alt="Logo" class="logo">
+            <h1>WhatsWebApp</h1>
+        </div>
 
-<ul>
-    {% for channel in channels %}
-        <li><a href="/show?channel={{ channel.endpoint | urlencode }}">{{ channel.name }}</a></li>
-    {% endfor %}
-</ul>
-
-</body>
+        <div class="left-panel">
+            <h2><div class="left-panel-text">Channels:</div></h2>
+            {% for channel in channels %}
+                <div class="channel left-panel-text">
+                    <h3>
+                        <a href="#" class="channel-link" data-channel="{{ channel.endpoint | urlencode }}">{{ channel.name }}</a>
+                    </h3>
+                    Papa: Lass sie reden!
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="right-panel" id="channel-content">
+            <!-- Channel content will go here -->
+        </div>
+        
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script>
+        $(document).ready(function() {
+            $('.channel-link').click(function(e) {
+                e.preventDefault(); // prevent the default action
+                var channel = $(this).data('channel'); // get the channel from the data-channel attribute
+                $.ajax({
+                    url: '/show',
+                    type: 'GET',
+                    data: { channel: channel },
+                    success: function(response) {
+                        $('#channel-content').html(response); // insert the response into the #channel-content element
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+        </script>
+    </body>
 </html>
