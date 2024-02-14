@@ -34,21 +34,12 @@ def update_channels():
     return CHANNELS
 
 
-@app.route("/")
-def home_page():
-    # fetch list of channels from server
-    return render_template("home.html", channels=update_channels())
-
-
-@app.route("/show")
-def show_channel():
-    # fetch list of messages from channel
-    show_channel = request.args.get("channel", None)
-    if not show_channel:
+def update_and_get_messages(channel_name):
+    if not channel_name:
         return "No channel specified", 400
     channel = None
     for c in update_channels():
-        if c["endpoint"] == urllib.parse.unquote(show_channel):
+        if c["endpoint"] == urllib.parse.unquote(channel_name):
             channel = c
             break
     if not channel:
@@ -59,6 +50,36 @@ def show_channel():
     if response.status_code != 200:
         return "Error fetching messages: " + str(response.text), 400
     messages = response.json()
+
+    return channel, messages
+
+
+@app.route("/")
+def home_page():
+    # fetch list of channels from server
+    return render_template("home.html", channels=update_channels())
+
+
+@app.route("/show")
+def show_channel():
+    # fetch list of messages from channel
+    channel_name = request.args.get("channel", None)
+
+    channel, messages = update_and_get_messages(channel_name)
+
+    if isinstance(messages, int):
+        return channel, messages
+
+    for message in messages:
+        date = datetime.datetime.strptime(message["timestamp"], '%Y-%m-%dT%H:%M:%S.%f').date()
+        time = datetime.datetime.strptime(message["timestamp"], '%Y-%m-%dT%H:%M:%S.%f')
+
+        # Now you can use strftime to format the timestamp
+        time = time.strftime('%H:%M')
+
+        message["date"] = date
+        message["time"] = time
+
     return render_template("channel.html", channel=channel, messages=messages)
 
 
@@ -89,9 +110,23 @@ def post_message():
     )
     if response.status_code != 200:
         return "Error posting message: " + str(response.text), 400
-    return redirect(
-        url_for("show_channel") + "?channel=" + urllib.parse.quote(post_channel)
-    )
+    
+    channel, messages = update_and_get_messages(channel["endpoint"])
+
+    if isinstance(messages, int):
+        return channel, messages
+    
+    for message in messages:
+        date = datetime.datetime.strptime(message["timestamp"], '%Y-%m-%dT%H:%M:%S.%f').date()
+        time = datetime.datetime.strptime(message["timestamp"], '%Y-%m-%dT%H:%M:%S.%f')
+
+        # Now you can use strftime to format the timestamp
+        time = time.strftime('%H:%M')
+
+        message["date"] = date
+        message["time"] = time
+
+    return render_template("channel.html", channel=channel, messages=messages)
 
 
 # Start development web server
