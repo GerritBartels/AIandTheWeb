@@ -2,28 +2,67 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Channel {{ channel.name }}</title>
+    <title> {{ channel.name }}</title>
+    
 </head>
 <body>
-<p>The distributed messenger. <a href="{{ url_for('home_page') }}">List of channels.</a> </p>
-{% if channel %}
-    <h1>Channel {{ channel.name }}</h1>
+    <div class="container">
+        {% if channel %}
+        <div class="messages"></div>
+        <h2><div class="channel-header">{{ channel.name }}</div></h2>
+            {% set last_date = [''] %}
+            {% for message in messages %}
+                {% if message.date != last_date[0] %}
+                    <p class="message-date">{{ message.date }}</p>
+                    {% set _ = last_date.append(message.date) %}
+                    {% set _ = last_date.pop(0) %}
+                {% endif %}
+                <div class="speech-bubble">
+                    <h2>{{ message.sender }}</h2>
+                    <p>{{ message.content }}</p>
+                    <p class="message-time">{{ message.time }}</p>
+                </div>
+            {% endfor %}
+    </div>
+                
+        {% else %}
+            <h1>Channel not found</h1>
+        {% endif %}
 
-        {% for message in messages %}
-            <h2>{{ message.sender }}</h2>
-            <p>{{ message.content }}</p>
-            <p style="font-size: 60%">{{ message.timestamp }}</p>
-        {% endfor %}
-{% else %}
-    <h1>Channel not found</h1>
-{% endif %}
+        <div class="message-bar">
+            <form action="post" method="post">
+                <input type="hidden" name="channel" value="{{ channel.endpoint | urlencode }}">
+                <input type="text" name="sender" id="sender" placeholder="Sender">
+                <div class="message-input">
+                    <input type="text" name="content" id="content" placeholder="Type a message...">
+                    <button type="submit">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-<form action="post" method="post">
-    <input type="hidden" name="channel" value="{{ channel.endpoint | urlencode }}">
-    Sender: <input type="text" name="sender" id="sender"> <br>
-    Message: <input type="text" name="content" id="content"> <br>
-    <input type="submit" value="Post">
-</form>
+    <script>
+        $(document).ready(function() {
+            $('form').submit(function(e) {
+                e.preventDefault(); // prevent the default action
+                var channel = $(this).find('input[name="channel"]').val();
+                var sender = $(this).find('input[name="sender"]').val();
+                var content = $(this).find('input[name="content"]').val();
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: $(this).attr('method'),
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        // update the right panel with the response
+                        $('#channel-content').html(response);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>
