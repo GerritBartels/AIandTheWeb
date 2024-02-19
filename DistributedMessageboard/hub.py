@@ -1,15 +1,15 @@
-from flask import Flask, request, render_template, jsonify
-from flask_sqlalchemy import SQLAlchemy
 import json
 import datetime
 import requests
+from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, render_template, jsonify
 
 db = SQLAlchemy()
 
 
-# Define the User data-model.
-# NB: Make sure to add flask_user UserMixin as this adds additional fields and properties required by Flask-User
 class Channel(db.Model):
+    """Represents a channel in the message board."""
+
     __tablename__ = "channels"
     id = db.Column(db.Integer, primary_key=True)
     active = db.Column("is_active", db.Boolean(), nullable=False, server_default="1")
@@ -21,7 +21,6 @@ class Channel(db.Model):
     last_heartbeat = db.Column(db.DateTime(), nullable=True, server_default=None)
 
 
-# Class-based application configuration
 class ConfigClass(object):
     """Flask application config"""
 
@@ -29,51 +28,74 @@ class ConfigClass(object):
     SECRET_KEY = "This is an INSECURE secret!! DO NOT use this in production!!"
 
     # Flask-SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = "sqlite:///chat_server.sqlite"  # File-based SQL database
-    SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
+    # Here a file-based SQL database with warnings turned off
+    SQLALCHEMY_DATABASE_URI = "sqlite:///chat_server.sqlite"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 # Create Flask app
 app = Flask(__name__)
-app.config.from_object(__name__ + ".ConfigClass")  # configuration
-app.app_context().push()  # create an app context before initializing db
-db.init_app(app)  # initialize database
-db.create_all()  # create database if necessary
+app.config.from_object(__name__ + ".ConfigClass")
+app.app_context().push()
+db.init_app(app)
+db.create_all()
 
 SERVER_AUTHKEY = "1234567890"
 
 
-# The Home page is accessible to anyone
 @app.route("/")
-def home_page():
-    # render home.html template
+def home_page() -> str:
+    """Renders the home page.
+
+    Returns:
+        (str): The rendered home page.
+    """
+
     channels = Channel.query.all()
+
     return render_template("home.html")
 
 
-def health_check(endpoint, authkey):
-    # make GET request to URL
-    # add authkey to request header
+def health_check(endpoint: str, authkey: str) -> bool:
+    """Check if a channel is healthy.
+
+    Arguments:
+        endpoint (str): The endpoint of the channel.
+        authkey (str): The authkey of the channel.
+
+    Returns:
+        (bool): True if the channel is healthy, False otherwise.
+    """
+
     response = requests.get(
         endpoint + "/health", headers={"Authorization": "authkey " + authkey}
     )
+
     if response.status_code != 200:
         return False
-    # TODO: check payload
+
+    # TODO: Check payload
     return True
 
 
-# Flask REST route for POST to /channels
 @app.route("/channels", methods=["POST"])
-def create_channel():
+def create_channel() -> tuple[str, int]:
+    """Creates a new channel.
+
+    Returns:
+        (tuple[str, int]): A tuple containing the response message and the status code.
+    """
+
     global SERVER_AUTHKEY
+    required_headers = ["name", "endpoint", "authkey"]
 
     record = json.loads(request.data)
 
-    # check if authorization header is present
+    # Check if authorization header is present
     if "Authorization" not in request.headers:
         return "No authorization header", 400
-    # check if authorization header is valid
+
+    # Check if authorization header is valid
     if request.headers["Authorization"] != "authkey " + SERVER_AUTHKEY:
         return (
             "Invalid authorization header ({})".format(
@@ -81,17 +103,18 @@ def create_channel():
             ),
             400,
         )
-    if "name" not in record:
-        return "Record has no name", 400
-    if "endpoint" not in record:
-        return "Record has no endpoint", 400
-    if "authkey" not in record:
-        return "Record has no authkey", 400
+
+    for header in required_headers:
+        if header not in record:
+            return f"Record has no {header}", 400
+
     if not health_check(record["endpoint"], record["authkey"]):
         return "Channel is not healthy", 400
 
     update_channel = Channel.query.filter_by(endpoint=record["endpoint"]).first()
-    if update_channel:  # Channel already exists, update it
+
+    # Update channel if it already exists
+    if update_channel:
         update_channel.name = record["name"]
         update_channel.HUB_AUTHKEY = record["authkey"]
         update_channel.active = False
@@ -114,8 +137,15 @@ def create_channel():
 
 
 @app.route("/channels", methods=["GET"])
-def get_channels():
+def get_channels() -> tuple[str, int]:
+    """Returns a list of channels.
+
+    Returns:
+        (tuple[str, int]): A tuple containing the response message and the status code.
+    """
+
     channels = Channel.query.all()
+
     return (
         jsonify(
             channels=[

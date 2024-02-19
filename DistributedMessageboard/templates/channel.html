@@ -44,7 +44,7 @@
     <script>
         $(document).ready(function() {
             $('form').submit(function(e) {
-                e.preventDefault(); // prevent the default action
+                e.preventDefault(); // Prevent the default action
                 var channel = $(this).find('input[name="channel"]').val();
                 var sender = $(this).find('input[name="sender"]').val();
                 var content = $(this).find('input[name="content"]').val();
@@ -53,7 +53,7 @@
                     type: $(this).attr('method'),
                     data: $(this).serialize(),
                     success: function(response) {
-                        // update the right panel with the response
+                        // Update the right panel with the response
                         $('#channel-content').html(response);
                     },
                     error: function(error) {

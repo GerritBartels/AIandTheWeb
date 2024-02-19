@@ -24,7 +24,7 @@
                     <h3>
                         <a href="#" class="channel-link" data-channel="{{ channel.endpoint | urlencode }}">{{ channel.name }}</a>
                     </h3>
-                    Papa: Lass sie reden!
+                    Sender: Last Message.
                 </div>
             {% endfor %}
         </div>
@@ -39,14 +39,15 @@
         <script>
             $(document).ready(function() {
                 $('.channel-link').click(function(e) {
-                    e.preventDefault(); // prevent the default action
-                    var channel = $(this).data('channel'); // get the channel from the data-channel attribute
+                    e.preventDefault(); // Prevent the default action
+                    var channel = $(this).data('channel'); // Get the channel from the data-channel attribute
                     $.ajax({
                         url: '/show',
                         type: 'GET',
                         data: { channel: channel },
                         success: function(response) {
-                            $('#channel-content').html(response); // insert the response into the #channel-content element
+                            // Insert the response into the #channel-content element
+                            $('#channel-content').html(response);
                         },
                         error: function(error) {
                             console.log(error);
