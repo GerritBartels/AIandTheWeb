@@ -14,15 +14,60 @@ import requests
 import datetime
 import urllib.parse
 from typing import Union
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+from models import db, User, Channel, ChannelMessage
 from flask import Flask, request, render_template, url_for, redirect
 
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+    """Sets the foreign key pragma on SQLite databases.
+
+    Arguments:
+        dbapi_connection (sqlite3.Connection): Active SQLite connection.
+        connection_record (sqlalchemy.pool.base._ConnectionRecord): The connection record.
+    """
+
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
+
+class ConfigClass(object):
+    """Flask application config"""
+
+    # Flask-SQLAlchemy settings
+    # Here a file-based SQL database
+    SQLALCHEMY_DATABASE_URI = "sqlite:///channel_database.sqlite"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
 app = Flask(__name__)
+app.config.from_object(__name__ + ".ConfigClass")
+app.app_context().push()
+db.init_app(app)
+db.create_all()
 
 HUB_AUTHKEY = "1234567890"
 HUB_URL = "http://localhost:5555"
 
 CHANNELS = None
 LAST_CHANNEL_UPDATE = None
+
+
+@app.cli.command("initdb")
+def initdb_command() -> None:
+    """Initialize the database."""
+
+    db.create_all()
+
+    # Create a test user
+    test_user = User(username="test_user")
+    db.session.add(test_user)
+    db.session.commit()
+
+    print("Database initialized and test user created.")
 
 
 def update_channels() -> list:
@@ -103,7 +148,10 @@ def home_page() -> str:
         (str): The home page.
     """
 
-    return render_template("home.html", channels=update_channels())
+    # Fetch users from database
+    users = User.query.all()
+
+    return render_template("home.html", channels=update_channels(), users=users)
 
 
 @app.route("/show")

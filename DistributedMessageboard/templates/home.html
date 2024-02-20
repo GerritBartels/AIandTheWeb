@@ -16,8 +16,9 @@
             </a>
             <h1>WhatsWebApp</h1>
             <select id="current-user" class="user-dropdown">
-                <option value="user1">User 1</option>
-                <option value="user2">User 2</option>
+                {% for user in users %}
+                    <option value="{{ user.username }}">{{ user.username }}</option>
+                {% endfor %}
             </select>
         </div>
 

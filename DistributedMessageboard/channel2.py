@@ -14,7 +14,24 @@ import json
 import requests
 import werkzeug
 from typing import Union
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 from flask import Flask, request, jsonify
+from models import db, User, Channel, ChannelMessage
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+    """Sets the foreign key pragma on SQLite databases.
+
+    Arguments:
+        dbapi_connection (sqlite3.Connection): Active SQLite connection.
+        connection_record (sqlalchemy.pool.base._ConnectionRecord): The connection record.
+    """
+
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 
 class ConfigClass(object):
@@ -23,11 +40,18 @@ class ConfigClass(object):
     # Flask settings
     SECRET_KEY = "This is an INSECURE secret!! DO NOT use this in production!!"
 
+    # Flask-SQLAlchemy settings
+    # Here a file-based SQL database
+    SQLALCHEMY_DATABASE_URI = "sqlite:///channel_database.sqlite"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 
 # Create Flask app
 app = Flask(__name__)
 app.config.from_object(__name__ + ".ConfigClass")
 app.app_context().push()
+db.init_app(app)
+db.create_all()
 
 HUB_URL = "http://localhost:5555"
 HUB_AUTHKEY = "1234567890"
@@ -43,6 +67,11 @@ def register_command() -> None:
     """Register the channel with the hub."""
 
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
+
+    # Create a channel with CHANNEL_NAME in the database
+    channel = Channel(name=CHANNEL_NAME)
+    db.session.add(channel)
+    db.session.commit()
 
     response = requests.post(
         HUB_URL + "/channels",
