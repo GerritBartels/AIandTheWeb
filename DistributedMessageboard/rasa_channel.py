@@ -69,7 +69,7 @@ def register_command() -> None:
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
 
     # Create a channel with CHANNEL_NAME in the database
-    channel = Channel(name=CHANNEL_NAME)
+    channel = Channel(name=CHANNEL_NAME, endpoint=CHANNEL_ENDPOINT, authkey=CHANNEL_AUTHKEY)
     db.session.add(channel)
     db.session.commit()
 

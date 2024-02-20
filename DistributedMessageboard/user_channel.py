@@ -15,6 +15,7 @@ import requests
 import werkzeug
 from typing import Union
 from sqlalchemy import event
+from datetime import datetime
 from sqlalchemy.engine import Engine
 from flask import Flask, request, jsonify
 from models import db, User, Channel, ChannelMessage
@@ -56,7 +57,7 @@ db.create_all()
 HUB_URL = "http://localhost:5555"
 HUB_AUTHKEY = "1234567890"
 CHANNEL_AUTHKEY = "22334455"
-CHANNEL_NAME = "The Lousy Channel"
+CHANNEL_NAME = "User Channel"
 PORT = 5002
 CHANNEL_ENDPOINT = f"http://localhost:{PORT}"
 CHANNEL_FILE = "messages.json"
@@ -69,7 +70,7 @@ def register_command() -> None:
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
 
     # Create a channel with CHANNEL_NAME in the database
-    channel = Channel(name=CHANNEL_NAME)
+    channel = Channel(name=CHANNEL_NAME, endpoint=CHANNEL_ENDPOINT, authkey=CHANNEL_AUTHKEY)
     db.session.add(channel)
     db.session.commit()
 
@@ -140,8 +141,27 @@ def home_page() -> Union[tuple[str, int], str]:
 
     if not check_authorization(request):
         return "Invalid authorization", 400
+    
+    channel_id = request.args.get("channel_id")
 
-    return jsonify(read_messages())
+    messages = read_messages(channel_id)
+
+    # Convert messages to JSON
+    messages = sorted(
+        [
+            {
+                "content": message.content,
+                "sender": message.sender,
+                # Convert timestamp to ISO format
+                "timestamp": message.timestamp.isoformat(),
+            }
+            for message in messages
+        ],
+        key=lambda x: x['timestamp'],
+        reverse=False
+    )
+
+    return jsonify(messages)
 
 
 @app.route("/", methods=["POST"])
@@ -152,7 +172,7 @@ def send_message() -> tuple[str, int]:
         (tuple[str, int]): A tuple containing the response message and the status code.
     """
 
-    required_keys = ["content", "sender", "timestamp"]
+    required_keys = ["channel_id", "content", "sender", "timestamp"]
 
     # Check authorization header
     if not check_authorization(request):
@@ -167,54 +187,45 @@ def send_message() -> tuple[str, int]:
         if key not in message:
             return f"No {key}", 400
 
-    # Add message to messages
-    messages = read_messages()
-    messages.append(
-        {
-            "content": message["content"],
-            "sender": message["sender"],
-            "timestamp": message["timestamp"],
-        }
-    )
-
-    save_messages(messages)
+    save_message(message)
 
     return "OK", 200
 
 
-def read_messages() -> list[dict]:
+def read_messages(channel_id: int) -> list[dict]:
     """Read the stored messages.
 
     Returns:
         messages (list[dict]): The stored messages.
     """
 
-    global CHANNEL_FILE
-
-    try:
-        f = open(CHANNEL_FILE, "r")
-    except FileNotFoundError:
-        return []
-    try:
-        messages = json.load(f)
-    except json.decoder.JSONDecodeError:
-        messages = []
-    f.close()
+    # Read messages from db
+    messages = ChannelMessage.query.filter_by(channel_id=channel_id).all()
 
     return messages
 
 
-def save_messages(messages: list[dict]) -> None:
-    """Save the messages to the file.
+def save_message(message: dict) -> None:
+    """Save the message to the file.
 
     Arguments:
-        messages (list[dict]): The messages to save.
+        message (dict): The message to save.
     """
 
-    global CHANNEL_FILE
+    # Save messages to db
+    timestamp_str = message["timestamp"].replace("Z", "+00:00")
+    message_timestamp = datetime.fromisoformat(timestamp_str)
+    
+    db.session.add(
+        ChannelMessage(
+            channel_id=message["channel_id"],
+            content=message["content"],
+            sender=message["sender"],
+            timestamp=message_timestamp,
+        )
+    )
 
-    with open(CHANNEL_FILE, "w") as f:
-        json.dump(messages, f)
+    db.session.commit()
 
 
 # Start development web server

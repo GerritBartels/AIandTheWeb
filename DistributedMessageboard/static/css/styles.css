@@ -54,18 +54,16 @@ body, html {
     outline: none;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-right: 10px;
+    margin-right: 20px;
+    font-family: Montserrat, sans-serif;
+    font-weight: 550;
 }
 
 .user-dropdown:hover {
     background-color: var(--right-panel-color);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 10px var(--right-panel-color);
 }
 
-.user-dropdown:focus {
-    background-color: var(--right-panel-color);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
 
 /* Left Panel */
 .left-panel {

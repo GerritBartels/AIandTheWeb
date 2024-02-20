@@ -23,6 +23,10 @@ class Channel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     active = db.Column("is_active", db.Boolean(), nullable=False, server_default="1")
     name = db.Column(db.String(100, collation="NOCASE"), nullable=False)
+    endpoint = db.Column(
+        db.String(100, collation="NOCASE"), nullable=False, unique=True
+    )
+    authkey = db.Column(db.String(100, collation="NOCASE"), nullable=False)
 
 
 class ChannelMessage(db.Model):
