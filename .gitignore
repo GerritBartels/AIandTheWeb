@@ -168,3 +168,6 @@ SearchEngine/index/
 # Instance and Weights folder of MovieRecommender
 MovieRecommender/weights/
 MovieRecommender/instance/
+
+# Ignore rasa cache
+DistributedMessageboard/rasa/.rasa/
