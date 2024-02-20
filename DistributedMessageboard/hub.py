@@ -1,3 +1,15 @@
+from pathlib import Path
+
+__location__ = Path(__file__).parent.resolve()
+
+import sys
+
+sys.path.insert(1, __location__.__str__())
+
+import os
+
+os.chdir(__location__)
+
 import json
 import datetime
 import requests

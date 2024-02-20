@@ -89,3 +89,20 @@ nlu:
     - are you a human?
     - am I talking to a bot?
     - am I talking to a human?
+
+- intent: ask_weather
+  examples: |
+    - what's the weather like?
+    - how's the weather?
+    - what's the weather?
+    - is it sunny?
+    - is it raining?
+    - is it cloudy?
+    - is it windy?
+    - is it snowing?
+    - is it hot?
+    - is it cold?
+    - is it warm?
+    - weather?
+    - weather forecast?
+    - weather report?

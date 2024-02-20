@@ -32,7 +32,6 @@
         <div class="message-bar">
             <form action="post" method="post">
                 <input type="hidden" name="channel" value="{{ channel.endpoint | urlencode }}">
-                <input type="text" name="sender" id="sender" placeholder="Sender">
                 <div class="message-input">
                     <input type="text" name="content" id="content" placeholder="Type a message...">
                     <button type="submit">Send</button>
@@ -46,12 +45,12 @@
             $('form').submit(function(e) {
                 e.preventDefault(); // Prevent the default action
                 var channel = $(this).find('input[name="channel"]').val();
-                var sender = $(this).find('input[name="sender"]').val();
+                var sender = "You";
                 var content = $(this).find('input[name="content"]').val();
                 $.ajax({
                     url: $(this).attr('action'),
                     type: $(this).attr('method'),
-                    data: $(this).serialize(),
+                    data: $(this).serialize() + "&sender=" + encodeURIComponent(sender),
                     success: function(response) {
                         // Update the right panel with the response
                         $('#channel-content').html(response);

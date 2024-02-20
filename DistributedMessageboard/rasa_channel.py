@@ -1,3 +1,15 @@
+from pathlib import Path
+
+__location__ = Path(__file__).parent.resolve()
+
+import sys
+
+sys.path.insert(1, __location__.__str__())
+
+import os
+
+os.chdir(__location__)
+
 import json
 import requests
 import werkzeug
@@ -20,7 +32,7 @@ app.app_context().push()
 HUB_URL = "http://localhost:5555"
 HUB_AUTHKEY = "1234567890"
 CHANNEL_AUTHKEY = "0987654321"
-CHANNEL_NAME = "The One and Only Channel"
+CHANNEL_NAME = "Rasa Channel"
 PORT = 5001
 CHANNEL_ENDPOINT = f"http://localhost:{PORT}"
 CHANNEL_FILE = "messages.json"
@@ -131,6 +143,24 @@ def send_message() -> tuple[str, int]:
         {
             "content": message["content"],
             "sender": message["sender"],
+            "timestamp": message["timestamp"],
+        }
+    )
+
+    save_messages(messages)
+
+
+    # Make post request to rasa chatbot
+    response = requests.post(
+        "http://localhost:5054/webhooks/rest/webhook",
+        json={"message": message["content"]},
+    )
+
+    # Add response to messages
+    messages.append(
+        {
+            "content": response.json()[0]["text"],
+            "sender": "Rasa",
             "timestamp": message["timestamp"],
         }
     )
