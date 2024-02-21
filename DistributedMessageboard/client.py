@@ -59,7 +59,7 @@ LAST_CHANNEL_UPDATE = None
 @app.cli.command("initdb")
 def initdb_command() -> None:
     """Initialize the database."""
-    
+
     db.drop_all()
     db.create_all()
 
@@ -106,7 +106,7 @@ def update_channels() -> list:
     return CHANNELS
 
 
-def update_and_get_messages(channel_name: str, channel_id: int=None) -> tuple:
+def update_and_get_messages(channel_name: str, channel_id: int = None) -> tuple:
     """Update the list of messages from a channel.
 
     Arguments:
@@ -132,11 +132,14 @@ def update_and_get_messages(channel_name: str, channel_id: int=None) -> tuple:
 
     if channel_id:
         response = requests.get(
-            channel["endpoint"], params={"channel_id": channel_id}, headers={"Authorization": "authkey " + channel["authkey"]}
+            channel["endpoint"],
+            params={"channel_id": channel_id},
+            headers={"Authorization": "authkey " + channel["authkey"]},
         )
     else:
         response = requests.get(
-            channel["endpoint"], headers={"Authorization": "authkey " + channel["authkey"]}
+            channel["endpoint"],
+            headers={"Authorization": "authkey " + channel["authkey"]},
         )
 
     if response.status_code != 200:
@@ -167,7 +170,12 @@ def home_page() -> str:
             if local_channel.endpoint == remote_channel["endpoint"]:
                 remote_channels.remove(remote_channel)
 
-    return render_template("home.html", remote_channels=remote_channels, users=users, local_channels=local_channels)
+    return render_template(
+        "home.html",
+        remote_channels=remote_channels,
+        users=users,
+        local_channels=local_channels,
+    )
 
 
 @app.route("/show")
@@ -180,6 +188,7 @@ def show_channel() -> Union[tuple[str, int], str]:
     """
     channel_name = request.args.get("channel", None)
     channel_id = request.args.get("channel_id", None)
+    sender = request.args.get("sender", None)
 
     if channel_id == "null":
         channel_id = None
@@ -200,7 +209,13 @@ def show_channel() -> Union[tuple[str, int], str]:
         message["date"] = date
         message["time"] = time
 
-    return render_template("channel.html", channel=channel, channel_id=channel_id, messages=messages)
+    return render_template(
+        "channel.html",
+        channel=channel,
+        channel_id=channel_id,
+        messages=messages,
+        sender=sender,
+    )
 
 
 @app.route("/post", methods=["POST"])
@@ -265,7 +280,13 @@ def post_message() -> Union[tuple[str, int], str]:
         message["date"] = date
         message["time"] = time
 
-    return render_template("channel.html", channel=channel, channel_id=channel_id, messages=messages)
+    return render_template(
+        "channel.html",
+        channel=channel,
+        channel_id=channel_id,
+        messages=messages,
+        sender=message_sender,
+    )
 
 
 # Start development web server

@@ -5,67 +5,74 @@
     <title> {{ channel.name }}</title>
     
 </head>
-<body>
-    <div class="container">
-        {% if channel %}
-        <div class="messages"></div>
-        <h2><div class="channel-header">{{ channel.name }}</div></h2>
-            {% set last_date = [''] %}
-            {% for message in messages %}
-                {% if message.date != last_date[0] %}
-                    <p class="message-date">{{ message.date }}</p>
-                    {% set _ = last_date.append(message.date) %}
-                    {% set _ = last_date.pop(0) %}
-                {% endif %}
-                <div class="speech-bubble">
-                    <h2>{{ message.sender }}</h2>
-                    <p>{{ message.content }}</p>
-                    <p class="message-time">{{ message.time }}</p>
-                </div>
-            {% endfor %}
-    </div>
-                
-        {% else %}
-            <h1>Channel not found</h1>
-        {% endif %}
-
-        <div class="message-bar">
-            <form action="post" method="post">
-                <input type="hidden" name="channel" value="{{ channel.endpoint | urlencode }}">
-                <input type="hidden" name="channel_id" value="{{ channel_id }}">
-                <div class="message-input">
-                    <input type="text" name="content" id="content" placeholder="Type a message...">
-                    <button type="submit">Send</button>
-                </div>
-            </form>
+    <body>
+        <div class="container">
+            {% if channel %}
+            <div class="messages"></div>
+            <h2><div class="channel-header">{{ channel.name }}</div></h2>
+                {% set last_date = [''] %}
+                {% for message in messages %}
+                    {% if message.date != last_date[0] %}
+                        <p class="message-date">{{ message.date }}</p>
+                        {% set _ = last_date.append(message.date) %}
+                        {% set _ = last_date.pop(0) %}
+                    {% endif %}
+                    {% if message.sender == sender %}
+                        <div class="speech-bubble-right">
+                            <h2>{{ message.sender }}</h2>
+                            <p>{{ message.content }}</p>
+                            <p class="message-time">{{ message.time }}</p>
+                        </div>
+                    {% else %}
+                        <div class="speech-bubble-left">
+                            <h2>{{ message.sender }}</h2>
+                            <p>{{ message.content }}</p>
+                            <p class="message-time">{{ message.time }}</p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
         </div>
-    </div>
+                    
+            {% else %}
+                <h1>Channel not found</h1>
+            {% endif %}
 
-    <script>
-        $(document).ready(function() {
-            $('form').submit(function(e) {
-                e.preventDefault(); // Prevent the default action
-                var channel = $(this).find('input[name="channel"]').val();
-                var channel_id = $(this).find('input[name="channel_id"]').val();
-                var sender = $('#current-user').val();
-                var content = $(this).find('input[name="content"]').val();
-                var formData = $(this).serializeArray(); // Convert form data to array
-                formData.push({name: 'sender', value: sender}); // Add sender to form data
-                $.ajax({
-                    url: $(this).attr('action'),
-                    type: $(this).attr('method'),
-                    data: $.param(formData), // Convert form data array back to serialized string
-                    success: function(response) {
-                        // Update the right panel with the response
-                        $('#channel-content').html(response);
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
+            <div class="message-bar">
+                <form action="post" method="post">
+                    <input type="hidden" name="channel" value="{{ channel.endpoint | urlencode }}">
+                    <input type="hidden" name="channel_id" value="{{ channel_id }}">
+                    <div class="message-input">
+                        <input type="text" name="content" id="content" placeholder="Type a message...">
+                        <button type="submit">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function() {
+                $('form').submit(function(e) {
+                    e.preventDefault(); // Prevent the default action
+                    var channel = $(this).find('input[name="channel"]').val();
+                    var channel_id = $(this).find('input[name="channel_id"]').val();
+                    var sender = $('#current-user').val();
+                    var content = $(this).find('input[name="content"]').val();
+                    var formData = $(this).serializeArray(); // Convert form data to array
+                    formData.push({name: 'sender', value: sender}); // Add sender to form data
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        type: $(this).attr('method'),
+                        data: $.param(formData), // Convert form data array back to serialized string
+                        success: function(response) {
+                            // Update the right panel with the response
+                            $('#channel-content').html(response);
+                        },
+                        error: function(error) {
+                            console.log(error);
+                        }
+                    });
                 });
             });
-        });
-    </script>
-
-</body>
+        </script>
+    </body>
 </html>

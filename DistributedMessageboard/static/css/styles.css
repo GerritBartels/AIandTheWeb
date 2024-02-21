@@ -2,6 +2,8 @@
 :root {
     --left-panel-color: rgb(35, 35, 37);
     --right-panel-color: rgb(43, 43, 45);
+    --left-chat-color: rgb(35, 35, 37);
+    --right-chat-color: rgb(60, 96, 87);
     --banner-color: rgb(27, 27, 28);
     --text-color: #f2ede7;
     --banner-height: 50px;
@@ -141,18 +143,40 @@ with the message input field once a channel is selected */
     text-align: center;
 }
 
-.speech-bubble {
+.speech-bubble-left, .speech-bubble-right {
+    /* Max width should be html size -150px */
+    max-width: calc(100% - 150px);
+    min-width: 300px;
+    display: inline-block;
+    word-wrap: break-word;
+    font-size: 110%;
+    letter-spacing: 1.5px;
+}
+
+.speech-bubble-left {
     position: relative;
-    background: var(--left-panel-color);
+    background: var(--left-chat-color);
     border-radius: .4em;
     color: var(--text-color);
     padding: 10px;
     margin: 15px;
-    margin-right: 80px;
+    margin-right: 150px;
+    align-self: flex-start;
+}
+
+.speech-bubble-right {
+    position: relative;
+    background: var(--right-chat-color);
+    border-radius: .4em;
+    color: var(--text-color);
+    padding: 10px;
+    margin: 15px;
+    margin-left: 150px;
+    align-self: flex-end;
 }
 
 /* Arrow for the speech bubble */
-.speech-bubble:after {
+.speech-bubble-left:after {
     content: '';
     position: absolute;
     top: 0;
@@ -160,10 +184,25 @@ with the message input field once a channel is selected */
     width: 0;
     height: 0;
     border: 20px solid transparent;
-    border-bottom-color: var(--left-panel-color);
+    border-bottom-color: var(--left-chat-color);
     border-top: 0;
     border-left: 0;
     margin-left: -10px;
+    margin-top: -20px;
+}
+
+.speech-bubble-right:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 15px;
+    width: 0;
+    height: 0;
+    border: 20px solid transparent;
+    border-bottom-color: var(--right-chat-color);
+    border-top: 0;
+    border-right: 0;
+    margin-right: -10px;
     margin-top: -20px;
 }
 
@@ -198,7 +237,7 @@ with the message input field once a channel is selected */
 }
 
 .message-input button {
-    background-color: #007bff;
+    background-color: var(--right-chat-color);
     color: white;
     border: none;
     padding: 10px 20px;
