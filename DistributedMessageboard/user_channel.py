@@ -11,6 +11,7 @@ import os
 os.chdir(__location__)
 
 import json
+import sqlalchemy
 import requests
 import werkzeug
 from typing import Union
@@ -69,10 +70,18 @@ def register_command() -> None:
 
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
 
-    # Create a channel with CHANNEL_NAME in the database
-    channel = Channel(name=CHANNEL_NAME, endpoint=CHANNEL_ENDPOINT, authkey=CHANNEL_AUTHKEY)
-    db.session.add(channel)
-    db.session.commit()
+    try:
+        # Create a channel with CHANNEL_NAME in the database
+        channel = Channel(
+            name=CHANNEL_NAME, endpoint=CHANNEL_ENDPOINT, authkey=CHANNEL_AUTHKEY
+        )
+        db.session.add(channel)
+        db.session.commit()
+
+    except sqlalchemy.exc.IntegrityError:
+        print(
+            "Channel already registered in the database, just registering with the hub."
+        )
 
     response = requests.post(
         HUB_URL + "/channels",
@@ -141,7 +150,7 @@ def home_page() -> Union[tuple[str, int], str]:
 
     if not check_authorization(request):
         return "Invalid authorization", 400
-    
+
     channel_id = request.args.get("channel_id")
 
     messages = read_messages(channel_id)
@@ -157,8 +166,8 @@ def home_page() -> Union[tuple[str, int], str]:
             }
             for message in messages
         ],
-        key=lambda x: x['timestamp'],
-        reverse=False
+        key=lambda x: x["timestamp"],
+        reverse=False,
     )
 
     return jsonify(messages)
@@ -215,7 +224,7 @@ def save_message(message: dict) -> None:
     # Save messages to db
     timestamp_str = message["timestamp"].replace("Z", "+00:00")
     message_timestamp = datetime.fromisoformat(timestamp_str)
-    
+
     db.session.add(
         ChannelMessage(
             channel_id=message["channel_id"],
