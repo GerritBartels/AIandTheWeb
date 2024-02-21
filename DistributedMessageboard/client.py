@@ -12,12 +12,14 @@ os.chdir(__location__)
 
 import requests
 import datetime
+import sqlalchemy
 import urllib.parse
 from typing import Union
 from sqlalchemy import event
+from flask.wrappers import Response
 from sqlalchemy.engine import Engine
 from models import db, User, Channel, ChannelMessage
-from flask import Flask, request, render_template, url_for, redirect
+from flask import Flask, request, render_template, jsonify, url_for, redirect
 
 
 @event.listens_for(Engine, "connect")
@@ -59,7 +61,7 @@ LAST_CHANNEL_UPDATE = None
 @app.cli.command("initdb")
 def initdb_command() -> None:
     """Initialize the database."""
-    
+
     db.drop_all()
     db.create_all()
 
@@ -106,7 +108,7 @@ def update_channels() -> list:
     return CHANNELS
 
 
-def update_and_get_messages(channel_name: str, channel_id: int=None) -> tuple:
+def update_and_get_messages(channel_name: str, channel_id: int = None) -> tuple:
     """Update the list of messages from a channel.
 
     Arguments:
@@ -132,11 +134,14 @@ def update_and_get_messages(channel_name: str, channel_id: int=None) -> tuple:
 
     if channel_id:
         response = requests.get(
-            channel["endpoint"], params={"channel_id": channel_id}, headers={"Authorization": "authkey " + channel["authkey"]}
+            channel["endpoint"],
+            params={"channel_id": channel_id},
+            headers={"Authorization": "authkey " + channel["authkey"]},
         )
     else:
         response = requests.get(
-            channel["endpoint"], headers={"Authorization": "authkey " + channel["authkey"]}
+            channel["endpoint"],
+            headers={"Authorization": "authkey " + channel["authkey"]},
         )
 
     if response.status_code != 200:
@@ -167,7 +172,12 @@ def home_page() -> str:
             if local_channel.endpoint == remote_channel["endpoint"]:
                 remote_channels.remove(remote_channel)
 
-    return render_template("home.html", remote_channels=remote_channels, users=users, local_channels=local_channels)
+    return render_template(
+        "home.html",
+        remote_channels=remote_channels,
+        users=users,
+        local_channels=local_channels,
+    )
 
 
 @app.route("/show")
@@ -200,7 +210,9 @@ def show_channel() -> Union[tuple[str, int], str]:
         message["date"] = date
         message["time"] = time
 
-    return render_template("channel.html", channel=channel, channel_id=channel_id, messages=messages)
+    return render_template(
+        "channel.html", channel=channel, channel_id=channel_id, messages=messages
+    )
 
 
 @app.route("/post", methods=["POST"])
@@ -265,7 +277,40 @@ def post_message() -> Union[tuple[str, int], str]:
         message["date"] = date
         message["time"] = time
 
-    return render_template("channel.html", channel=channel, channel_id=channel_id, messages=messages)
+    return render_template(
+        "channel.html", channel=channel, channel_id=channel_id, messages=messages
+    )
+
+
+@app.route("/add_user", methods=["POST"])
+def add_user() -> Union[tuple[Response, int], Response]:
+    """Add a user to the database.
+
+    Returns:
+        (Union[tuple[Response, int], Response]): A tuple containing the response message and the status code,
+            or just the response message.
+    """
+
+    data = request.get_json()
+    username = data.get("username")
+
+    if username:
+        user = User(username=username)
+        try:
+            db.session.add(user)
+            db.session.commit()
+            return jsonify({"success": True})
+        except sqlalchemy.exc.IntegrityError:
+            print("error caputerd")
+            db.session.rollback()
+            return (
+                jsonify(
+                    {"success": False, "message": "Username is already registered"}
+                ),
+                409,
+            )
+    else:
+        return jsonify({"success": False, "message": "Username is required"}), 400
 
 
 # Start development web server

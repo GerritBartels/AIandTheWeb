@@ -15,11 +15,18 @@
                 <img src="{{ url_for('static', filename='img/Logo_chat.png')}}" alt="Logo" class="logo">
             </a>
             <h1>WhatsWebApp</h1>
-            <select id="current-user" class="user-dropdown">
-                {% for user in users %}
-                    <option value="{{ user.username }}">{{ user.username }}</option>
-                {% endfor %}
-            </select>
+            <div class="user-controls">
+                <div class="add-user-button-wrapper">
+                    <button id="add-user" class="add-user-button">
+                        <img src="{{ url_for('static', filename='img/plus.png')}}" alt="Add User">
+                    </button>
+                </div>
+                <select id="current-user" class="user-dropdown">
+                    {% for user in users %}
+                        <option value="{{ user.username }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
 
         <div class="left-panel">
@@ -71,6 +78,36 @@
                         }
                     });
                 });
+            });
+        </script>
+        <script>
+            document.getElementById('add-user').addEventListener('click', function() {
+                var username = prompt("Enter new user name"); // Prompt the user for a new username
+                if (username) {
+                    fetch('/add_user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({username: username}),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Insert user into current user dropdown and select it
+                            var select = document.getElementById('current-user');
+                            var option = document.createElement('option');
+                            option.value = username;
+                            option.text = username;
+                            select.add(option);
+                            option.selected = true;
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+                } else {
+                    alert('Username is required');
+                }
             });
         </script>
     </body>
