@@ -17,6 +17,7 @@ import werkzeug
 from typing import Union
 from sqlalchemy import event
 from datetime import datetime
+from flask.wrappers import Response
 from sqlalchemy.engine import Engine
 from flask import Flask, request, jsonify
 from models import db, User, Channel, ChannelMessage
@@ -124,11 +125,11 @@ def check_authorization(request: werkzeug.local.LocalProxy) -> bool:
 
 
 @app.route("/health", methods=["GET"])
-def health_check() -> tuple[str, int]:
+def health_check() -> Union[tuple[str, int], tuple[Response, int]]:
     """Check if the channel is healthy.
 
     Returns:
-        (tuple[str, int]): A tuple containing the response message and the status code.
+        (Union[tuple[str, int], tuple[Response, int]]): A tuple containing the response message and the status code.
     """
 
     global CHANNEL_NAME
@@ -140,11 +141,11 @@ def health_check() -> tuple[str, int]:
 
 
 @app.route("/", methods=["GET"])
-def home_page() -> Union[tuple[str, int], str]:
+def home_page() -> Union[tuple[str, int], Response]:
     """Return list of messages.
 
     Returns:
-        (Union[tuple[str, int], str]): A tuple containing the response message and the status code,
+        (Union[tuple[str, int], Response]): A tuple containing the response message and the status code,
             or the stored messages.
     """
 

@@ -13,6 +13,8 @@ os.chdir(__location__)
 import json
 import datetime
 import requests
+from typing import Union
+from flask.wrappers import Response
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, render_template, jsonify
 
@@ -91,11 +93,11 @@ def health_check(endpoint: str, authkey: str) -> bool:
 
 
 @app.route("/channels", methods=["POST"])
-def create_channel() -> tuple[str, int]:
+def create_channel() -> Union[tuple[str, int], tuple[Response, int]]:
     """Creates a new channel.
 
     Returns:
-        (tuple[str, int]): A tuple containing the response message and the status code.
+        (Union[tuple[str, int], tuple[Response, int]]): A tuple containing the response and the status code.
     """
 
     global SERVER_AUTHKEY
@@ -149,11 +151,11 @@ def create_channel() -> tuple[str, int]:
 
 
 @app.route("/channels", methods=["GET"])
-def get_channels() -> tuple[str, int]:
+def get_channels() -> tuple[Response, int]:
     """Returns a list of channels.
 
     Returns:
-        (tuple[str, int]): A tuple containing the response message and the status code.
+        (tuple[Response, int]): A tuple containing the response and the status code.
     """
 
     channels = Channel.query.all()

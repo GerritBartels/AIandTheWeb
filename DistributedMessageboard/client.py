@@ -12,12 +12,14 @@ os.chdir(__location__)
 
 import requests
 import datetime
+import sqlalchemy
 import urllib.parse
 from typing import Union
 from sqlalchemy import event
+from flask.wrappers import Response
 from sqlalchemy.engine import Engine
 from models import db, User, Channel, ChannelMessage
-from flask import Flask, request, render_template, url_for, redirect
+from flask import Flask, request, render_template, jsonify, url_for, redirect
 
 
 @event.listens_for(Engine, "connect")
@@ -287,6 +289,37 @@ def post_message() -> Union[tuple[str, int], str]:
         messages=messages,
         sender=message_sender,
     )
+
+
+@app.route("/add_user", methods=["POST"])
+def add_user() -> Union[tuple[Response, int], Response]:
+    """Add a user to the database.
+
+    Returns:
+        (Union[tuple[Response, int], Response]): A tuple containing the response message and the status code,
+            or just the response message.
+    """
+
+    data = request.get_json()
+    username = data.get("username")
+
+    if username:
+        user = User(username=username)
+        try:
+            db.session.add(user)
+            db.session.commit()
+            return jsonify({"success": True})
+        except sqlalchemy.exc.IntegrityError:
+            print("error caputerd")
+            db.session.rollback()
+            return (
+                jsonify(
+                    {"success": False, "message": "Username is already registered"}
+                ),
+                409,
+            )
+    else:
+        return jsonify({"success": False, "message": "Username is required"}), 400
 
 
 # Start development web server
