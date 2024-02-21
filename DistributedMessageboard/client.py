@@ -190,6 +190,7 @@ def show_channel() -> Union[tuple[str, int], str]:
     """
     channel_name = request.args.get("channel", None)
     channel_id = request.args.get("channel_id", None)
+    sender = request.args.get("sender", None)
 
     if channel_id == "null":
         channel_id = None
@@ -211,7 +212,11 @@ def show_channel() -> Union[tuple[str, int], str]:
         message["time"] = time
 
     return render_template(
-        "channel.html", channel=channel, channel_id=channel_id, messages=messages
+        "channel.html",
+        channel=channel,
+        channel_id=channel_id,
+        messages=messages,
+        sender=sender,
     )
 
 
@@ -278,7 +283,11 @@ def post_message() -> Union[tuple[str, int], str]:
         message["time"] = time
 
     return render_template(
-        "channel.html", channel=channel, channel_id=channel_id, messages=messages
+        "channel.html",
+        channel=channel,
+        channel_id=channel_id,
+        messages=messages,
+        sender=message_sender,
     )
 
 

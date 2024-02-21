@@ -11,6 +11,7 @@ import os
 os.chdir(__location__)
 
 import json
+import sqlalchemy
 import requests
 import werkzeug
 from typing import Union
@@ -70,12 +71,18 @@ def register_command() -> None:
 
     global CHANNEL_AUTHKEY, CHANNEL_NAME, CHANNEL_ENDPOINT
 
-    # Create a channel with CHANNEL_NAME in the database
-    channel = Channel(
-        name=CHANNEL_NAME, endpoint=CHANNEL_ENDPOINT, authkey=CHANNEL_AUTHKEY
-    )
-    db.session.add(channel)
-    db.session.commit()
+    try:
+        # Create a channel with CHANNEL_NAME in the database
+        channel = Channel(
+            name=CHANNEL_NAME, endpoint=CHANNEL_ENDPOINT, authkey=CHANNEL_AUTHKEY
+        )
+        db.session.add(channel)
+        db.session.commit()
+
+    except sqlalchemy.exc.IntegrityError:
+        print(
+            "Channel already registered in the database, just registering with the hub."
+        )
 
     response = requests.post(
         HUB_URL + "/channels",

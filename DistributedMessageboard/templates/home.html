@@ -65,13 +65,17 @@
                     e.preventDefault(); // Prevent the default action
                     var channel = $(this).data('channel'); // Get the channel from the data-channel attribute
                     var channel_id = $(this).data('id') || null; // Get the channel id from the data-id attribute
+                    var sender = $('#current-user').val();
                     $.ajax({
                         url: '/show',
                         type: 'GET',
-                        data: { channel: channel, channel_id: channel_id},
+                        data: { channel: channel, channel_id: channel_id, sender: sender},
                         success: function(response) {
                             // Insert the response into the #channel-content element
                             $('#channel-content').html(response);
+                            // Scroll to the bottom of the container
+                            var container = document.querySelector('#channel-content');
+                            container.scrollTop = container.scrollHeight;
                         },
                         error: function(error) {
                             console.log(error);
