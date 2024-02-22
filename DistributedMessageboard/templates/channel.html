@@ -66,6 +66,25 @@
                         success: function(response) {
                             // Update the right panel with the response
                             $('#channel-content').html(response);
+                            // Scroll to the bottom of the container
+                            var container = document.querySelector('#channel-content');
+                            container.scrollTop = container.scrollHeight;
+                            
+                            // Retrieve the last message and sender
+                            $.ajax({
+                                url: '/retrieve_last_message/' + channel_id,
+                                type: 'GET',
+                                success: function(response) {
+                                    // Update the last message and sender in the home.html page
+                                    var lastMessageSenderElement = $('#channel-' + channel_id + '-last-message-sender');
+                                    var lastMessageContentElement = $('#channel-' + channel_id + '-last-message-content');
+                                    lastMessageSenderElement.text(response.last_message_sender);
+                                    lastMessageContentElement.text(response.last_message);
+                                },
+                                error: function(error) {
+                                    console.log(error);
+                                }
+                            });
                         },
                         error: function(error) {
                             console.log(error);

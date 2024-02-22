@@ -126,6 +126,15 @@ body, html {
     text-decoration: none;
 }
 
+.channel h3 {
+    margin: 0;
+    padding: 18px 0; 
+}
+
+.selected-channel {
+    background-color: var(--banner-color);
+}
+
 /* Right Panel */
 .right-panel {
     background-color: var(--right-panel-color);

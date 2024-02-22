@@ -36,7 +36,12 @@
                     <h3>
                         <a href="#" class="channel-link" data-channel="{{ channel.endpoint | urlencode }}" data-id="{{ channel.id }}">{{ channel.name }}</a>
                     </h3>
-                    Sender: Last Message.
+                    {% if channel.last_message_sender != "" %}
+                        <span id="channel-{{ channel.id }}-last-message-sender">{{ channel.last_message_sender }}</span>: 
+                        <span id="channel-{{ channel.id }}-last-message-content">{{ channel.last_message }}</span>
+                    {% else %}
+                        <span id="channel-{{ channel.id }}-last-message-content">{{ channel.last_message }}</span>
+                    {% endif %}
                 </div>
             {% endfor %}
 
@@ -47,7 +52,6 @@
                     <h3>
                         <a href="#" class="channel-link" data-channel="{{ channel.endpoint | urlencode }}" data-id="None">{{ channel.name }}</a>
                     </h3>
-                    Sender: Last Message.
                 </div>
             {% endfor %}
         </div>
@@ -81,6 +85,11 @@
                             console.log(error);
                         }
                     });
+
+                    // Remove the selected-channel class from all channels
+                    $('.channel').removeClass('selected-channel');
+                    // Add the selected-channel class to the parent channel of the clicked link
+                    $(this).parents('.channel').addClass('selected-channel');
                 });
             });
         </script>
@@ -111,6 +120,21 @@
                     });
                 } else {
                     alert('Username is required');
+                }
+            });
+        </script>
+        <script>
+            // When the user is selected, save the selected user to sessionStorage
+            document.getElementById('current-user').addEventListener('change', function() {
+                sessionStorage.setItem('selectedUser', this.value);
+            });
+
+            // When the page loads, check if there is a selected user in sessionStorage
+            document.addEventListener('DOMContentLoaded', function() {
+                var selectedUser = sessionStorage.getItem('selectedUser');
+                if (selectedUser) {
+                    // If there is, set that user as the selected user in the dropdown
+                    document.getElementById('current-user').value = selectedUser;
                 }
             });
         </script>

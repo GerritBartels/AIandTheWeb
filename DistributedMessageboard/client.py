@@ -15,7 +15,7 @@ import datetime
 import sqlalchemy
 import urllib.parse
 from typing import Union
-from sqlalchemy import event
+from sqlalchemy import event, desc
 from flask.wrappers import Response
 from sqlalchemy.engine import Engine
 from models import db, User, Channel, ChannelMessage
@@ -164,6 +164,18 @@ def home_page() -> str:
     users = User.query.all()
     local_channels = Channel.query.all()
 
+    # Fetch the last message for each local channel
+    for channel in local_channels:
+        last_message = (
+            ChannelMessage.query.filter_by(channel_id=channel.id)
+            .order_by(desc(ChannelMessage.timestamp))
+            .first()
+        )
+        channel.last_message = (
+            last_message.content if last_message else "No messages here."
+        )
+        channel.last_message_sender = last_message.sender if last_message else ""
+
     remote_channels = update_channels()
 
     # Remove local channels from remote channels
@@ -177,6 +189,31 @@ def home_page() -> str:
         remote_channels=remote_channels,
         users=users,
         local_channels=local_channels,
+    )
+
+
+@app.route("/retrieve_last_message/<int:channel_id>", methods=["GET"])
+def update_channel(channel_id: int) -> Response:
+    """Return the last message for a channel.
+
+    Arguments:
+        channel_id (int): The ID of the channel.
+
+    Returns:
+        (Response): The last message for the channel.
+    """
+
+    last_message = (
+        ChannelMessage.query.filter_by(channel_id=channel_id)
+        .order_by(desc(ChannelMessage.timestamp))
+        .first()
+    )
+
+    return jsonify(
+        {
+            "last_message": last_message.content if last_message else "No messages here.",
+            "last_message_sender": last_message.sender if last_message else "",
+        }
     )
 
 
