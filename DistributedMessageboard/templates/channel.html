@@ -76,10 +76,9 @@
                                 type: 'GET',
                                 success: function(response) {
                                     // Update the last message and sender in the home.html page
-                                    var lastMessageSenderElement = $('#channel-' + channel_id + '-last-message-sender');
                                     var lastMessageContentElement = $('#channel-' + channel_id + '-last-message-content');
-                                    lastMessageSenderElement.text(response.last_message_sender);
-                                    lastMessageContentElement.text(response.last_message);
+                                    var formattedMessage = response.last_message_sender + ": " + response.last_message;
+                                    lastMessageContentElement.text(formattedMessage);
                                 },
                                 error: function(error) {
                                     console.log(error);
