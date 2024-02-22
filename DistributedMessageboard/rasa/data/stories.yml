@@ -26,9 +26,61 @@ stories:
   - intent: mood_unhappy
   - action: utter_cheer_up
   - action: utter_did_that_help
-  - intent: deny
+
+- story: goodbye path
+  steps:
+  - intent: goodbye
   - action: utter_goodbye
 
+- story: bot challenge
+  steps:
+  - intent: bot_challenge
+  - action: utter_iamabot
+
+- story: affirm path
+  steps:
+  - intent: affirm
+  - action: utter_affirm
+
+- story: deny path
+  steps:
+  - intent: deny
+  - action: utter_deny
+
+- story: thank path
+  steps:
+  - intent: thank
+  - action: utter_thank
+
+- story: help path
+  steps:
+  - intent: help
+  - action: utter_help
+
+- story: about path
+  steps:
+  - intent: about
+  - action: utter_about
+
+- story: joke path
+  steps:
+  - intent: joke
+  - action: utter_joke
+
+- story: age path
+  steps:
+  - intent: age
+  - action: utter_age
+
+- story: place path
+  steps:
+  - intent: place
+  - action: utter_place
+
+- story: technology path
+  steps:
+  - intent: technology
+  - action: utter_technology
 
 - story: weather path
   steps:

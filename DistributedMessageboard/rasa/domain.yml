@@ -8,33 +8,71 @@ intents:
   - mood_great
   - mood_unhappy
   - bot_challenge
+  - joke
+  - thank
+  - help
+  - about
+  - age
+  - place
+  - technology
   - ask_weather
+
 
 actions:
   - action_weather
 
 responses:
   utter_greet:
-  - text: "Hey! How are you?"
+  - text: "Hey! How's it going?"
 
   utter_cheer_up:
-  - text: "Here is something to cheer you up:"
-    image: "https://i.imgur.com/nGF1K8f.jpg"
+  - text: "Oh no! I'm sorry. I hope this cheers you up: https://i.imgur.com/iWbof4h.jpeg"
+    image: "https://i.imgur.com/iWbof4h.jpeg"
 
   utter_did_that_help:
   - text: "Did that help you?"
 
   utter_happy:
-  - text: "Great, carry on!"
+  - text: "That's awesome to hear! Keep it up."
 
   utter_goodbye:
-  - text: "Bye"
+  - text: "Goodbye! If you need anything, feel free to ask."
 
   utter_iamabot:
-  - text: "I am a bot, powered by Rasa."
+  - text: "Yes, I'm a bot, but a friendly one! How can I assist you today?"
+
+  utter_affirm:
+  - text: "Glad to hear that!"
+
+  utter_deny:
+  - text: "Okay, no problem."
+
+  utter_thank:
+  - text: "You're welcome! If you have more questions, feel free to ask."
+
+  utter_help:
+  - text: "Sure, I'm here to help. What do you need assistance with?"
+
+  utter_about:
+  - text: "I am a chatbot powered by Rasa. My purpose is to assist and chat with you."
+
+  utter_joke:
+  - text: "Sure, here's a joke for you: What do you call a can opener that doesn’t work? A can’t opener! Hope that brought a smile to your face!"
 
   utter_ask_weather:
   - text: "The weather is always great in rasa land."
+
+  utter_age:
+  - text: "I don't have an age in the traditional sense. I was created recently to assist you."
+
+  utter_place:
+  - text: "I exist in the digital realm, created to assist users like you. My 'birthplace' is the world of programming."
+
+  utter_technology:
+  - text: "I am powered by Rasa, which is an open-source conversational AI platform."
+
+  utter_default:
+  - text: "I'm sorry, I didn't get that. But I'm constantly learning. If you have any other questions, feel free to ask."
 
 session_config:
   session_expiration_time: 60
