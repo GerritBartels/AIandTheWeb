@@ -90,6 +90,66 @@ nlu:
     - am I talking to a bot?
     - am I talking to a human?
 
+- intent: joke
+  examples: |
+    - tell me a joke
+    - give me a joke
+    - make me laugh
+    - share a funny story
+    - I need a good laugh
+
+- intent: thank
+  examples: |
+    - thanks
+    - thank you
+    - thanks a lot
+    - thank you very much
+    - appreciate it
+    - thanks heaps
+
+- intent: help
+  examples: |
+    - help
+    - can you help me?
+    - I need assistance
+    - could you assist me?
+    - I'm lost, help
+    - help me please
+    - I need some help
+
+- intent: about
+  examples: |
+    - tell me about yourself
+    - what is your purpose?
+    - who created you?
+    - what can you do?
+    - explain yourself
+    - who made you?
+
+- intent: age
+  examples: |
+    - how old are you?
+    - what's your age?
+    - when were you created?
+    - are you young or old?
+    - tell me about your age
+
+- intent: place
+  examples: |
+    - where are you from?
+    - what's your origin?
+    - where were you developed?
+    - tell me about your birthplace
+    - where do you exist?
+
+- intent: technology
+  examples: |
+    - what technology are you based on?
+    - are you powered by AI?
+    - tell me about your technology
+    - explain your technical background
+    - what's your underlying technology?
+
 - intent: ask_weather
   examples: |
     - what's the weather like?
@@ -98,11 +158,12 @@ nlu:
     - is it sunny?
     - is it raining?
     - is it cloudy?
-    - is it windy?
-    - is it snowing?
-    - is it hot?
-    - is it cold?
-    - is it warm?
-    - weather?
-    - weather forecast?
-    - weather report?
+    - is it windy
+
+# - intent: ask_time
+
+# - intent: ask_date
+
+# - intent: ask_news
+
+# - intent: ask_cooking
