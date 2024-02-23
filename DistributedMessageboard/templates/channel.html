@@ -5,7 +5,7 @@
     <title> {{ channel.name }}</title>
     
 </head>
-    <body>
+    <body data-retrieve-last-message-url="{{ url_for('retrieve_last_message', channel_id=0) }}">
         <div class="container">
             {% if channel %}
             <div class="messages"></div>
@@ -38,7 +38,7 @@
             {% endif %}
 
             <div class="message-bar">
-                <form action="post" method="post">
+                <form action="{{ url_for('post_message') }}" method="post">
                     <input type="hidden" name="channel" value="{{ channel.endpoint | urlencode }}">
                     <input type="hidden" name="channel_id" value="{{ channel_id }}">
                     <div class="message-input">
@@ -71,8 +71,9 @@
                             container.scrollTop = container.scrollHeight;
                             
                             // Retrieve the last message and sender
+                            var retrieveLastMessageUrl = document.body.dataset.retrieveLastMessageUrl.replace('0', channel_id);
                             $.ajax({
-                                url: '/retrieve_last_message/' + channel_id,
+                                url: retrieveLastMessageUrl,
                                 type: 'GET',
                                 success: function(response) {
                                     // Update the last message and sender in the home.html page
