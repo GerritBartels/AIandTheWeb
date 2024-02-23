@@ -173,7 +173,7 @@ def home_page() -> Union[tuple[str, int], Response]:
 
 @app.route("/", methods=["POST"])
 def send_message() -> tuple[str, int]:
-    """Send a message.
+    """Send a message and save it to the db.
 
     Returns:
         (tuple[str, int]): A tuple containing the response message and the status code.
@@ -200,7 +200,7 @@ def send_message() -> tuple[str, int]:
 
 
 def read_messages() -> list[dict]:
-    """Read the stored messages.
+    """Read all messages from a specific channel from the db.
 
     Returns:
         messages (list[dict]): The stored messages.
@@ -215,7 +215,7 @@ def read_messages() -> list[dict]:
 
 
 def save_message(message: dict) -> None:
-    """Save the message to the file.
+    """Save the message to the db.
 
     Arguments:
         message (dict): The message to save.
