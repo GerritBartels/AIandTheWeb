@@ -56,6 +56,9 @@ app.app_context().push()
 db.init_app(app)
 db.create_all()
 
+session = requests.Session()
+session.trust_env = False
+
 HUB_URL = "http://localhost:5555"
 HUB_AUTHKEY = "1234567890"
 CHANNEL_AUTHKEY = "0987654321"
@@ -196,7 +199,7 @@ def send_message() -> tuple[str, int]:
     save_message(message)
 
     # Make post request to rasa chatbot
-    response = requests.post(
+    response = session.post(
         "http://localhost:5054/webhooks/rest/webhook",
         json={"message": message["content"]},
     )
