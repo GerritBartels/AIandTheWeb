@@ -13,6 +13,24 @@ rules:
   - action: utter_iamabot
 
 
+- rule: Greet the user
+  steps:
+  - intent: greet
+  - action: utter_greet
+
+
+- rule: affirm 
+  steps:
+  - intent: affirm
+  - action: utter_affirm
+
+
+- rule: deny 
+  steps:
+  - intent: deny
+  - action: utter_deny
+
+
 # This rule handles the Form activation
 - rule: Activate_Weather_Form
   steps:
@@ -31,6 +49,42 @@ rules:
     - requested_slot: null
   - action: action_weather
   - action: action_reset_all_slots
+
+
+- rule: Tell the age
+  steps:
+  - intent: age
+  - action: utter_age
+
+
+- rule: Tell about the bot
+  steps:
+  - intent: about
+  - action: utter_about
+
+
+- rule: Tell the birthplace 
+  steps:
+  - intent: place
+  - action: utter_place
+
+
+- rule: Tell the technology
+  steps:
+  - intent: technology
+  - action: utter_technology
+
+
+- rule: Offer help
+  steps:
+  - intent: help
+  - action: utter_help
+
+
+- rule: Say thanks
+  steps:
+  - intent: thank
+  - action: utter_thank
 
 
 - rule: Do coin flip
