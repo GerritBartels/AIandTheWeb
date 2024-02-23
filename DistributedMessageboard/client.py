@@ -132,7 +132,7 @@ def update_channels() -> list:
     return CHANNELS
 
 
-def update_and_get_messages(channel_name: str, channel_id: int = None) -> tuple:
+def update_and_get_messages(channel_name: Union[str, None], channel_id: Union[int, None] = None) -> tuple:
     """Update the list of messages from a channel.
 
     Arguments:
@@ -140,7 +140,7 @@ def update_and_get_messages(channel_name: str, channel_id: int = None) -> tuple:
         channel_id (int): The ID of the channel. Defaults to None.
 
     Returns:
-        (tuple): A tuple containing the channel and the messages.
+        channel, messages (tuple): A tuple containing the channel and the messages.
     """
 
     if not channel_name:
@@ -178,7 +178,7 @@ def update_and_get_messages(channel_name: str, channel_id: int = None) -> tuple:
 
 @app.route("/")
 def home_page() -> str:
-    """Return list of channels.
+    """Render the home page with a list of local & remote channels and users.
 
     Returns:
         (str): The home page.
@@ -243,11 +243,10 @@ def update_channel(channel_id: int) -> Response:
 
 @app.route("/show")
 def show_channel() -> Union[tuple[str, int], str]:
-    """Return list of messages for a channel.
+    """Render the home page with a the channel, channel_id, messages and sender.
 
     Returns:
-        (Union[tuple[str, int], str]): A tuple containing the response message and the status code,
-            or the rendered channel page.
+        (str): The channel page.
     """
     channel_name = request.args.get("channel", None)
     channel_id = request.args.get("channel_id", None)
@@ -283,11 +282,11 @@ def show_channel() -> Union[tuple[str, int], str]:
 
 @app.route("/post", methods=["POST"])
 def post_message() -> Union[tuple[str, int], str]:
-    """Post a message to a channel.
+    """Post a message to a channel and render the channel page 
+    with a the channel, channel_id, messages and sender.
 
     Returns:
-        (Union[tuple[str, int], str]): A tuple containing the response message and the status code,
-            or the rendered channel page.
+        (str): The channel page.
     """
 
     post_channel = request.form["channel"]

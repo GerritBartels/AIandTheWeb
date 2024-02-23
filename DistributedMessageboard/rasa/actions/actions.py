@@ -38,12 +38,12 @@ from rasa_sdk.executor import CollectingDispatcher
 class ActionWeather(Action):
     """Rasa action that retrieves the current weather for a given city."""
 
-    def name(self) -> Text:
+    def name(self) -> str:
         """Unique identifier for the action."""
 
         return "action_weather"
 
-    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List:
         """Retrieves current weather information for a given city from 
         the OpenWeathers One Call API (temperature, humidity, wind speed, description).
         
@@ -91,24 +91,24 @@ class ActionResetAllSlots(Action):
         (list): Returns a list containing the AllSlotsReset event.
     """
 
-    def name(self):
+    def name(self) -> str:
         """Unique identifier for the action."""
 
         return "action_reset_all_slots"
 
-    def run(self, dispatcher, tracker, domain):
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List:
         return [AllSlotsReset()]
     
 
 class ActionCoinFlip(Action):
     """Rasa action that simulates a coin flip."""
 
-    def name(self):
+    def name(self) -> str:
         """Unique identifier for the action."""
 
         return "action_coin_flip"
 
-    def run(self, dispatcher, tracker, domain):
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List:
         """Simulates a coin flip using numpy and sends the result to the user.
         
         Arguments:
@@ -128,12 +128,12 @@ class ActionCoinFlip(Action):
 class ActionRollDice(Action):
     """Rasa action that simulates a dice roll."""
 
-    def name(self):
+    def name(self) -> str:
         """Unique identifier for the action."""
 
         return "action_dice_roll"
 
-    def run(self, dispatcher, tracker, domain):
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List:
         """Simulates a dice roll using numpy and sends the result to the user.
         
         Arguments:
@@ -153,12 +153,12 @@ class ActionRollDice(Action):
 class ActionTime(Action):
     """Rasa action that retrieves the current time in Germany."""
 
-    def name(self):
+    def name(self) -> str:
         """Unique identifier for the action."""
 
         return "action_time"
 
-    def run(self, dispatcher, tracker, domain):
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List:
         """Retrieves the current time in Germany via the world time api and sends it to the user.
         
         Arguments:
@@ -182,12 +182,12 @@ class ActionTime(Action):
 class ActionJoke(Action):
     """Rasa action that retrieves a random joke."""
     
-    def name(self):
+    def name(self) -> str:
         """Unique identifier for the action."""
 
         return "action_joke"
 
-    def run(self, dispatcher, tracker, domain):
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List:
         """Retrieves a random joke from the official joke api and sends it to the user.
         
         Arguments:
@@ -209,12 +209,12 @@ class ActionJoke(Action):
 class ActionQuote(Action):
     """Rasa action that retrieves a random quote."""
     
-    def name(self):
+    def name(self) -> str:
         """Unique identifier for the action."""
 
         return "action_quote"
 
-    def run(self, dispatcher, tracker, domain):
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List:
         """Retrieves a random quote from the quotable api and sends it to the user.
         
         Arguments:
@@ -236,12 +236,12 @@ class ActionQuote(Action):
 class ActionFact(Action):
     """Rasa action that retrieves a random fact."""
         
-    def name(self):
+    def name(self) -> str:
         """Unique identifier for the action."""
 
         return "action_fact"
 
-    def run(self, dispatcher, tracker, domain):
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List:
         """Retrieves a random fact from the useless facts api and sends it to the user.
         
         Arguments:
@@ -263,12 +263,12 @@ class ActionFact(Action):
 class ActionRecipe(Action):
     """Rasa action that retrieves a random recipe."""
     
-    def name(self):
+    def name(self) -> str:
         """Unique identifier for the action."""
 
         return "action_recipe"
 
-    def run(self, dispatcher, tracker, domain):
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List:
         """Retrieves a random recipe from the meal db api and sends it to the user.
         
         Arguments:
