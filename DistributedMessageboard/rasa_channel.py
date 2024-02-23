@@ -15,6 +15,7 @@ import requests
 import werkzeug
 import sqlalchemy
 from typing import Union
+from sqlalchemy import exc
 from sqlalchemy import event
 from datetime import datetime
 from flask.wrappers import Response
@@ -241,14 +242,34 @@ def save_message(message: dict) -> None:
 
     channel_id = Channel.query.filter_by(name=CHANNEL_NAME).first().id
 
-    db.session.add(
-        ChannelMessage(
-            channel_id=channel_id,
-            content=message["content"],
-            sender=message["sender"],
-            timestamp=message_timestamp,
+    try:
+        db.session.add(
+            ChannelMessage(
+                channel_id=channel_id,
+                content=message["content"],
+                sender=message["sender"],
+                timestamp=message_timestamp,
+            )
         )
-    )
+        db.session.commit()
+    except exc.IntegrityError as e:
+        if 'foreign key constraint' in str(e.orig).lower():
+            # Add the new user to the database
+            db.session.add(User(username=message["sender"]))
+            db.session.commit()
+
+            # Retry adding the ChannelMessage
+            db.session.add(
+                ChannelMessage(
+                    channel_id=channel_id,
+                    content=message["content"],
+                    sender=message["sender"],
+                    timestamp=message_timestamp,
+                )
+            )
+            db.session.commit()
+        else:
+            raise
 
     db.session.commit()
 
