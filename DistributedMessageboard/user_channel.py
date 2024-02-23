@@ -240,6 +240,9 @@ def save_message(message: dict) -> None:
         db.session.commit()
     except exc.IntegrityError as e:
         if 'foreign key constraint' in str(e.orig).lower():
+
+            db.session.rollback()
+
             # Add the new user to the database
             db.session.add(User(username=message["sender"]))
             db.session.commit()
@@ -255,6 +258,7 @@ def save_message(message: dict) -> None:
             )
             db.session.commit()
         else:
+            db.session.rollback()
             raise
 
     db.session.commit()
