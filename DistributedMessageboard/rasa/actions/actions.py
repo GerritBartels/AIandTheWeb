@@ -44,7 +44,8 @@ class ActionWeather(Action):
         return "action_weather"
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        """Retrieves current weather information for a given city (temperature, humidity, wind speed, description).
+        """Retrieves current weather information for a given city from 
+        the OpenWeathers One Call API (temperature, humidity, wind speed, description).
         
         Arguments:
             dispatcher (CollectingDispatcher): The dispatcher to send messages back to the user.
