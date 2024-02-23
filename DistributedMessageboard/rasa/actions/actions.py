@@ -25,21 +25,44 @@
 #         dispatcher.utter_message(text="Hello World!")
 #
 #         return []
-
+import requests
 from typing import Any, Text, Dict, List
 from rasa_sdk import Action, Tracker
+from rasa_sdk.events import SlotSet, AllSlotsReset
 from rasa_sdk.executor import CollectingDispatcher
 
 
-class ActionWheater(Action):
+class ActionWeather(Action):
     def name(self) -> Text:
         return "action_weather"
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        #city = tracker.get_slot("city")
-        # if city == "Berlin":
-        #     response = "It is currently 32 degrees in Berlin"
-        # else:
-        #     response = "I am sorry, I do not know the weather for {}".format(city)
-        dispatcher.utter_message(text="The weather is great")
+        city = tracker.get_slot("city")
+        
+        # Api call to OpenWeathers One Call API
+        api_key = "YOUR_API_KEY"
+        r = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric")
+        
+        if r.status_code != 200:
+            dispatcher.utter_message(f"Sorry, I couldn't find the weather for {city}. Please try again.")
+
+        else:
+            data = r.json()
+            temp = data['main']['temp']
+            humidity = data['main']['humidity']
+            wind_speed = data['wind']['speed']
+            description = data['weather'][0]['description']
+
+            response = f"It is currently {temp} degrees in {city} with {description}, the humidity is {humidity}% and the wind speed is {wind_speed} m/s."
+
+            dispatcher.utter_message(response)
+
         return []
+    
+class ActionResetAllSlots(Action):
+
+    def name(self):
+        return "action_reset_all_slots"
+
+    def run(self, dispatcher, tracker, domain):
+        return [AllSlotsReset()]

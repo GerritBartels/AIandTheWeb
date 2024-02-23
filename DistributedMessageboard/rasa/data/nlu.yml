@@ -160,6 +160,18 @@ nlu:
     - is it cloudy?
     - is it windy
 
+# - intent: city
+#   examples: |
+#     - Berlin
+#     - Paris
+#     - Osnabrück
+#     - New York
+#     - London
+#     - Tokyo
+#     - Sydney
+#     - San Francisco
+#     - Toronto
+
 # - intent: ask_time
 
 # - intent: ask_date
@@ -167,3 +179,8 @@ nlu:
 # - intent: ask_news
 
 # - intent: ask_cooking
+
+# - intent: ask_coin_flip
+
+# - intent: ask_dice_roll
+

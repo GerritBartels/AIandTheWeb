@@ -58,6 +58,28 @@ CHANNELS = None
 LAST_CHANNEL_UPDATE = None
 
 
+def truncate(input: str, length: int=35, suffix: str=' ...') -> str:
+    """Truncate a string to a certain length.
+    
+    Arguments:
+        input (str): The input string.
+        length (int): The length to truncate to. Defaults to 50.
+        suffix (str): The suffix to append to the truncated string. Defaults to '...'.
+
+    Returns:
+        (str): The truncated string.
+    """
+
+    if len(input) > length:
+
+        return input[:length].rsplit(' ', 1)[0]+suffix
+    
+    return input
+
+
+app.jinja_env.filters['truncate'] = truncate
+
+
 @app.cli.command("initdb")
 def initdb_command() -> None:
     """Initialize the database."""
@@ -65,9 +87,11 @@ def initdb_command() -> None:
     db.drop_all()
     db.create_all()
 
-    # Create a test user
+    # Create a test user and rasa chatbot
     test_user = User(username="test_user")
+    rasa = User(username="Rasa")
     db.session.add(test_user)
+    db.session.add(rasa)
     db.session.commit()
 
     print("Database initialized and test user created.")
@@ -161,7 +185,7 @@ def home_page() -> str:
     """
 
     # Fetch all users and local channels from database
-    users = User.query.all()
+    users = User.query.filter(User.username != 'Rasa').all()
     local_channels = Channel.query.all()
 
     # Fetch the last message for each local channel

@@ -37,9 +37,9 @@
                         <a href="#" class="channel-link" data-channel="{{ channel.endpoint | urlencode }}" data-id="{{ channel.id }}">{{ channel.name }}</a>
                     </h3>
                     {% if channel.last_message_sender != "" %}
-                        <span id="channel-{{ channel.id }}-last-message-content">{{ channel.last_message_sender }}: {{ channel.last_message }}</span>
+                        <span id="channel-{{ channel.id }}-last-message-content">{{ channel.last_message_sender }}: {{ channel.last_message|truncate }}</span>
                     {% else %}
-                        <span id="channel-{{ channel.id }}-last-message-content">{{ channel.last_message }}</span>
+                        <span id="channel-{{ channel.id }}-last-message-content">{{ channel.last_message|truncate }}</span>
                     {% endif %}
                 </div>
             {% endfor %}

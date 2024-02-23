@@ -77,7 +77,11 @@
                                 success: function(response) {
                                     // Update the last message and sender in the home.html page
                                     var lastMessageContentElement = $('#channel-' + channel_id + '-last-message-content');
-                                    var formattedMessage = response.last_message_sender + ": " + response.last_message;
+                                    var message = response.last_message;
+                                    if (message.length > 35) {
+                                        message = message.substring(0, 35) + '...';
+                                    }
+                                    var formattedMessage = response.last_message_sender + ": " + message;
                                     lastMessageContentElement.text(formattedMessage);
                                 },
                                 error: function(error) {

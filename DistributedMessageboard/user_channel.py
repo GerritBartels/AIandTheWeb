@@ -11,9 +11,9 @@ import os
 os.chdir(__location__)
 
 import json
-import sqlalchemy
 import requests
 import werkzeug
+import sqlalchemy
 from typing import Union
 from sqlalchemy import event
 from datetime import datetime

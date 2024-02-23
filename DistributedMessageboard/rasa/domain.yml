@@ -1,4 +1,7 @@
 version: "3.1"
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
 
 intents:
   - greet
@@ -17,9 +20,22 @@ intents:
   - technology
   - ask_weather
 
+# entities:
+#   - city
 
-actions:
-  - action_weather
+slots:
+  city:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: ask_weather_form
+            requested_slot: city
+
+forms:
+  ask_weather_form:
+    required_slots:
+      - city
 
 responses:
   utter_greet:
@@ -59,9 +75,6 @@ responses:
   utter_joke:
   - text: "Sure, here's a joke for you: What do you call a can opener that doesn’t work? A can’t opener! Hope that brought a smile to your face!"
 
-  utter_ask_weather:
-  - text: "The weather is always great in rasa land."
-
   utter_age:
   - text: "I don't have an age in the traditional sense. I was created recently to assist you."
 
@@ -71,9 +84,15 @@ responses:
   utter_technology:
   - text: "I am powered by Rasa, which is an open-source conversational AI platform."
 
+  utter_ask_city:
+  - text: "What city do you want to know the weather for?"
+
+  utter_weather_wait:
+  - text: "Please wait while I fetch the current weather data for you."
+
   utter_default:
   - text: "I'm sorry, I didn't get that. But I'm constantly learning. If you have any other questions, feel free to ask."
 
-session_config:
-  session_expiration_time: 60
-  carry_over_slots_to_new_session: true
+actions:
+  - action_weather
+  - action_reset_all_slots

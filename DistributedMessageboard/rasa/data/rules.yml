@@ -11,3 +11,24 @@ rules:
   steps:
   - intent: bot_challenge
   - action: utter_iamabot
+
+
+# This rule handles the Form activation
+- rule: Activate_Weather_Form
+  steps:
+  - intent: ask_weather
+  - action: ask_weather_form
+  - active_loop: ask_weather_form
+
+# This rule handles the Form deactivation and the forwarding to the weather api
+- rule: Submit_Weather_Form
+  condition:
+  - active_loop: ask_weather_form
+  steps:
+  - action: ask_weather_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
+#  - action: utter_weather_wait
+  - action: action_weather
+  - action: action_reset_all_slots
