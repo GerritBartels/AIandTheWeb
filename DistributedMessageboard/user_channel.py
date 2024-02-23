@@ -62,7 +62,6 @@ CHANNEL_AUTHKEY = "22334455"
 CHANNEL_NAME = "User Channel"
 PORT = 5002
 CHANNEL_ENDPOINT = f"http://localhost:{PORT}"
-CHANNEL_FILE = "messages.json"
 
 
 @app.cli.command("register")
@@ -152,9 +151,7 @@ def home_page() -> Union[tuple[str, int], Response]:
     if not check_authorization(request):
         return "Invalid authorization", 400
 
-    channel_id = request.args.get("channel_id")
-
-    messages = read_messages(channel_id)
+    messages = read_messages()
 
     # Convert messages to JSON
     messages = sorted(
@@ -182,7 +179,7 @@ def send_message() -> tuple[str, int]:
         (tuple[str, int]): A tuple containing the response message and the status code.
     """
 
-    required_keys = ["channel_id", "content", "sender", "timestamp"]
+    required_keys = ["content", "sender", "timestamp"]
 
     # Check authorization header
     if not check_authorization(request):
@@ -202,12 +199,14 @@ def send_message() -> tuple[str, int]:
     return "OK", 200
 
 
-def read_messages(channel_id: int) -> list[dict]:
+def read_messages() -> list[dict]:
     """Read all messages from a specific channel from the db.
 
     Returns:
         messages (list[dict]): The stored messages.
     """
+
+    channel_id = Channel.query.filter_by(name=CHANNEL_NAME).first().id
 
     # Read messages from db
     messages = ChannelMessage.query.filter_by(channel_id=channel_id).all()
@@ -226,9 +225,11 @@ def save_message(message: dict) -> None:
     timestamp_str = message["timestamp"].replace("Z", "+00:00")
     message_timestamp = datetime.fromisoformat(timestamp_str)
 
+    channel_id = Channel.query.filter_by(name=CHANNEL_NAME).first().id
+
     db.session.add(
         ChannelMessage(
-            channel_id=message["channel_id"],
+            channel_id=channel_id,
             content=message["content"],
             sender=message["sender"],
             timestamp=message_timestamp,

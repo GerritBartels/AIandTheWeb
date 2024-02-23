@@ -5,7 +5,7 @@
     <title> {{ channel.name }}</title>
     
 </head>
-    <body data-retrieve-last-message-url="{{ url_for('retrieve_last_message', channel_id=0) }}">
+    <body>
         <div class="container">
             {% if channel %}
             <div class="messages"></div>
@@ -40,7 +40,8 @@
             <div class="message-bar">
                 <form action="{{ url_for('post_message') }}" method="post">
                     <input type="hidden" name="channel" value="{{ channel.endpoint | urlencode }}">
-                    <input type="hidden" name="channel_id" value="{{ channel_id }}">
+                    <input type="hidden" name="channel_name" value="{{ channel.name }}">
+                    <input type="hidden" name="retrieveLastMessageUrl" value="{{ url_for('retrieve_last_message', channel_name='placeholder') }}">
                     <div class="message-input">
                         <input type="text" name="content" id="content" placeholder="Type a message...">
                         <button type="submit">Send</button>
@@ -54,10 +55,11 @@
                 $('form').submit(function(e) {
                     e.preventDefault(); // Prevent the default action
                     var channel = $(this).find('input[name="channel"]').val();
-                    var channel_id = $(this).find('input[name="channel_id"]').val();
+                    var channel_name = $(this).find('input[name="channel_name"]').val();
                     var sender = $('#current-user').val();
                     var content = $(this).find('input[name="content"]').val();
                     var formData = $(this).serializeArray(); // Convert form data to array
+                    var retrieveLastMessageUrl = $(this).find('input[name="retrieveLastMessageUrl"]').val();
                     formData.push({name: 'sender', value: sender}); // Add sender to form data
                     $.ajax({
                         url: $(this).attr('action'),
@@ -70,14 +72,15 @@
                             var container = document.querySelector('#channel-content');
                             container.scrollTop = container.scrollHeight;
                             
-                            // Retrieve the last message and sender
-                            var retrieveLastMessageUrl = document.body.dataset.retrieveLastMessageUrl.replace('0', channel_id);
+                            // Replace the placeholder in the retrieveLastMessageUrl with the actual channel name
+                            retrieveLastMessageUrl = retrieveLastMessageUrl.replace('placeholder', channel_name);
+
                             $.ajax({
                                 url: retrieveLastMessageUrl,
                                 type: 'GET',
                                 success: function(response) {
                                     // Update the last message and sender in the home.html page
-                                    var lastMessageContentElement = $('#channel-' + channel_id + '-last-message-content');
+                                    var lastMessageContentElement = $('#channel-' + response.channel_id + '-last-message-content');
                                     var message = response.last_message;
                                     if (message.length > 35) {
                                         message = message.substring(0, 35) + '...';
