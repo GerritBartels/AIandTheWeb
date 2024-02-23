@@ -168,17 +168,6 @@ nlu:
     - flip a penny
     - do a coin flip
 
-# - intent: city
-#   examples: |
-#     - Berlin
-#     - Paris
-#     - Osnabrück
-#     - New York
-#     - London
-#     - Tokyo
-#     - Sydney
-#     - San Francisco
-#     - Toronto
 
 - intent: ask_time
   examples: |
@@ -191,6 +180,7 @@ nlu:
     - what's the date?
     - what's today's date?
     - tell me the date
+    - date and time 
 
 
 - intent: ask_dice_roll
