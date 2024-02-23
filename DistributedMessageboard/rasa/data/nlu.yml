@@ -90,7 +90,7 @@ nlu:
     - am I talking to a bot?
     - am I talking to a human?
 
-- intent: joke
+- intent: ask_joke
   examples: |
     - tell me a joke
     - give me a joke
@@ -160,6 +160,14 @@ nlu:
     - is it cloudy?
     - is it windy
 
+- intent: ask_coin_flip
+  examples: |
+    - can you flip a coin?
+    - heads or tails?
+    - flip a quarter
+    - flip a penny
+    - do a coin flip
+
 # - intent: city
 #   examples: |
 #     - Berlin
@@ -172,15 +180,72 @@ nlu:
 #     - San Francisco
 #     - Toronto
 
-# - intent: ask_time
+- intent: ask_time
+  examples: |
+    - what time is it?
+    - what's the time?
+    - can you tell me the time?
+    - do you know the time?
+    - what's the current time?
+    - what day is it?
+    - what's the date?
+    - what's today's date?
+    - tell me the date
 
-# - intent: ask_date
 
-# - intent: ask_news
+- intent: ask_dice_roll
+  examples: |
+    - roll a dice
+    - roll a die
+    - roll the dice
+    - roll the die
+    - roll a 6-sided die
+    - please roll a dice
+    - Can you roll a dice?
+    - Do a dice roll
 
-# - intent: ask_cooking
 
-# - intent: ask_coin_flip
+- intent: ask_quote
+  examples: |
+    - give me a quote
+    - share a quote
+    - quote of the day
+    - I need a quote
+    - can you give me a quote
+    - I want a quote
+    - tell me a quote
+    - quote me
+    - quote please
 
-# - intent: ask_dice_roll
+
+- intent: ask_fact
+  examples: |
+    - tell me a fact
+    - share a fact
+    - fact of the day
+    - I need a fact
+    - can you give me a fact
+    - I want a fact
+    - tell me a fact
+    - random fact
+    - useless fact
+    - fact please
+
+
+- intent: ask_recipe
+  examples: |
+    - give me a recipe
+    - share a recipe
+    - recipe of the day
+    - I need a recipe
+    - can you give me a recipe
+    - I want a recipe
+    - tell me a recipe
+    - recipe please
+    - recipe
+    - cooking
+    - random recipe
+    - I don't know what to cook
+    - I need a cooking idea
+    - I need a cooking inspiration
 

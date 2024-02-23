@@ -11,7 +11,7 @@ intents:
   - mood_great
   - mood_unhappy
   - bot_challenge
-  - joke
+  - ask_joke
   - thank
   - help
   - about
@@ -19,9 +19,13 @@ intents:
   - place
   - technology
   - ask_weather
+  - ask_coin_flip
+  - ask_time
+  - ask_dice_roll
+  - ask_quote
+  - ask_fact
+  - ask_recipe
 
-# entities:
-#   - city
 
 slots:
   city:
@@ -70,10 +74,7 @@ responses:
   - text: "Sure, I'm here to help. What do you need assistance with?"
 
   utter_about:
-  - text: "I am a chatbot powered by Rasa. My purpose is to assist and chat with you."
-
-  utter_joke:
-  - text: "Sure, here's a joke for you: What do you call a can opener that doesn’t work? A can’t opener! Hope that brought a smile to your face!"
+  - text: "I am a chatbot powered by Rasa. My purpose is to assist and chat with you. I can tell you a joke, provide the current weather, flip a coin, roll a die, tell a fact or quote and give you cooking inspiration. Feel free to ask me anything!"
 
   utter_age:
   - text: "I don't have an age in the traditional sense. I was created recently to assist you."
@@ -96,3 +97,10 @@ responses:
 actions:
   - action_weather
   - action_reset_all_slots
+  - action_coin_flip
+  - action_time
+  - action_dice_roll
+  - action_joke
+  - action_quote
+  - action_fact
+  - action_recipe

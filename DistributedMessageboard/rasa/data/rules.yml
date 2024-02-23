@@ -29,6 +29,46 @@ rules:
   - active_loop: null
   - slot_was_set:
     - requested_slot: null
-#  - action: utter_weather_wait
   - action: action_weather
   - action: action_reset_all_slots
+
+
+- rule: Do coin flip
+  steps:
+  - intent: ask_coin_flip
+  - action: action_coin_flip
+
+
+- rule: Tell the time
+  steps:
+  - intent: ask_time
+  - action: action_time
+
+
+- rule: Roll a dice
+  steps:
+  - intent: ask_dice_roll
+  - action: action_dice_roll
+
+
+- rule: Tell a joke
+  steps:
+  - intent: ask_joke
+  - action: action_joke
+
+
+- rule: Tell a quote
+  steps:
+  - intent: ask_quote
+  - action: action_quote
+
+
+- rule: Tell a fact
+  steps:
+  - intent: ask_fact
+  - action: action_fact
+
+- rule: Tell a recipe
+  steps:
+  - intent: ask_recipe
+  - action: action_recipe

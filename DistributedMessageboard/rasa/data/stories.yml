@@ -62,11 +62,6 @@ stories:
   - intent: about
   - action: utter_about
 
-- story: joke path
-  steps:
-  - intent: joke
-  - action: utter_joke
-
 - story: age path
   steps:
   - intent: age
