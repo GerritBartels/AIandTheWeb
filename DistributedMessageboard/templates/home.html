@@ -34,7 +34,7 @@
             {% for channel in local_channels %}
                 <div class="channel left-panel-text">
                     <h3>
-                        <a href="#" class="channel-link" data-channel="{{ channel.endpoint | urlencode }}" data-id="{{ channel.id }}">{{ channel.name }}</a>
+                        <a href="#" class="channel-link" data-channel="{{ channel.endpoint | urlencode }}">{{ channel.name }}</a>
                     </h3>
                     {% if channel.last_message_sender != "" %}
                         <span id="channel-{{ channel.id }}-last-message-content">{{ channel.last_message_sender }}: {{ channel.last_message|truncate }}</span>
@@ -49,7 +49,7 @@
             {% for channel in remote_channels %}
                 <div class="channel left-panel-text">
                     <h3>
-                        <a href="#" class="channel-link" data-channel="{{ channel.endpoint | urlencode }}" data-id="None">{{ channel.name }}</a>
+                        <a href="#" class="channel-link" data-channel="{{ channel.endpoint | urlencode }}">{{ channel.name }}</a>
                     </h3>
                 </div>
             {% endfor %}
@@ -67,13 +67,12 @@
                 $('.channel-link').click(function(e) {
                     e.preventDefault(); // Prevent the default action
                     var channel = $(this).data('channel'); // Get the channel from the data-channel attribute
-                    var channel_id = $(this).data('id') || null; // Get the channel id from the data-id attribute
                     var sender = $('#current-user').val();
                     var showUrl = document.body.dataset.showUrl;
                     $.ajax({
                         url: showUrl,
                         type: 'GET',
-                        data: { channel: channel, channel_id: channel_id, sender: sender},
+                        data: { channel: channel, sender: sender},
                         success: function(response) {
                             // Insert the response into the #channel-content element
                             $('#channel-content').html(response);

@@ -132,12 +132,11 @@ def update_channels() -> list:
     return CHANNELS
 
 
-def update_and_get_messages(channel_name: str, channel_id: int = None) -> tuple:
+def update_and_get_messages(channel_name: str) -> tuple:
     """Update the list of messages from a channel.
 
     Arguments:
         channel_name (str): The name of the channel.
-        channel_id (int): The ID of the channel. Defaults to None.
 
     Returns:
         (tuple): A tuple containing the channel and the messages.
@@ -156,17 +155,11 @@ def update_and_get_messages(channel_name: str, channel_id: int = None) -> tuple:
     if not channel:
         return "Channel not found", 404
 
-    if channel_id:
-        response = requests.get(
-            channel["endpoint"],
-            params={"channel_id": channel_id},
-            headers={"Authorization": "authkey " + channel["authkey"]},
-        )
-    else:
-        response = requests.get(
-            channel["endpoint"],
-            headers={"Authorization": "authkey " + channel["authkey"]},
-        )
+    
+    response = requests.get(
+        channel["endpoint"],
+        headers={"Authorization": "authkey " + channel["authkey"]},
+    )
 
     if response.status_code != 200:
         return "Error fetching messages: " + str(response.text), 400
@@ -216,16 +209,18 @@ def home_page() -> str:
     )
 
 
-@app.route("/retrieve_last_message/<int:channel_id>", methods=["GET"])
-def retrieve_last_message(channel_id: int) -> Response:
+@app.route("/retrieve_last_message/<string:channel_name>", methods=["GET"])
+def retrieve_last_message(channel_name: str) -> Response:
     """Return the last message for a channel.
 
     Arguments:
-        channel_id (int): The ID of the channel.
+        channel_name (str): The name of the channel.
 
     Returns:
         (Response): The last message for the channel.
     """
+
+    channel_id = Channel.query.filter_by(name=channel_name).first().id
 
     last_message = (
         ChannelMessage.query.filter_by(channel_id=channel_id)
@@ -235,6 +230,7 @@ def retrieve_last_message(channel_id: int) -> Response:
 
     return jsonify(
         {
+            "channel_id": channel_id,
             "last_message": last_message.content if last_message else "No messages here.",
             "last_message_sender": last_message.sender if last_message else "",
         }
@@ -250,13 +246,9 @@ def show_channel() -> Union[tuple[str, int], str]:
             or the rendered channel page.
     """
     channel_name = request.args.get("channel", None)
-    channel_id = request.args.get("channel_id", None)
     sender = request.args.get("sender", None)
 
-    if channel_id == "null":
-        channel_id = None
-
-    channel, messages = update_and_get_messages(channel_name, channel_id)
+    channel, messages = update_and_get_messages(channel_name)
 
     if isinstance(messages, int):
         return channel, messages
@@ -275,7 +267,6 @@ def show_channel() -> Union[tuple[str, int], str]:
     return render_template(
         "channel.html",
         channel=channel,
-        channel_id=channel_id,
         messages=messages,
         sender=sender,
     )
@@ -291,10 +282,6 @@ def post_message() -> Union[tuple[str, int], str]:
     """
 
     post_channel = request.form["channel"]
-    channel_id = request.form["channel_id"]
-
-    if channel_id == "null":
-        channel_id = None
 
     if not post_channel:
         return "No channel specified", 400
@@ -317,7 +304,6 @@ def post_message() -> Union[tuple[str, int], str]:
         channel["endpoint"],
         headers={"Authorization": "authkey " + channel["authkey"]},
         json={
-            "channel_id": channel_id,
             "content": message_content,
             "sender": message_sender,
             "timestamp": message_timestamp,
@@ -327,7 +313,7 @@ def post_message() -> Union[tuple[str, int], str]:
     if response.status_code != 200:
         return "Error posting message: " + str(response.text), 400
 
-    channel, messages = update_and_get_messages(channel["endpoint"], channel_id)
+    channel, messages = update_and_get_messages(channel["endpoint"])
 
     if isinstance(messages, int):
         return channel, messages
@@ -346,7 +332,6 @@ def post_message() -> Union[tuple[str, int], str]:
     return render_template(
         "channel.html",
         channel=channel,
-        channel_id=channel_id,
         messages=messages,
         sender=message_sender,
     )
