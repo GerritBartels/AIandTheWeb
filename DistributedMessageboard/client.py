@@ -217,7 +217,7 @@ def home_page() -> str:
 
 
 @app.route("/retrieve_last_message/<int:channel_id>", methods=["GET"])
-def update_channel(channel_id: int) -> Response:
+def retrieve_last_message(channel_id: int) -> Response:
     """Return the last message for a channel.
 
     Arguments:

@@ -8,7 +8,7 @@
         <link rel="stylesheet"
             href="{{ url_for('static', filename='css/styles.css')}}">
     </head>
-    <body>
+    <body data-show-url="{{ url_for('show_channel') }}" data-add-user-url="{{ url_for('add_user') }}">
 
         <div class="banner">
             <a href="{{url_for('home_page')}}">
@@ -69,8 +69,9 @@
                     var channel = $(this).data('channel'); // Get the channel from the data-channel attribute
                     var channel_id = $(this).data('id') || null; // Get the channel id from the data-id attribute
                     var sender = $('#current-user').val();
+                    var showUrl = document.body.dataset.showUrl;
                     $.ajax({
-                        url: '/show',
+                        url: showUrl,
                         type: 'GET',
                         data: { channel: channel, channel_id: channel_id, sender: sender},
                         success: function(response) {
@@ -96,7 +97,8 @@
             document.getElementById('add-user').addEventListener('click', function() {
                 var username = prompt("Enter new user name"); // Prompt the user for a new username
                 if (username) {
-                    fetch('/add_user', {
+                    var addUserUrl = document.body.dataset.addUserUrl;
+                    fetch(addUserUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
