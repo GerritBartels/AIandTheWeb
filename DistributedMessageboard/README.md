@@ -16,8 +16,8 @@ This project is a distributed messageboard built with flask. It is designed to f
     - Simple chatting
     - Rolling a die
     - Flipping a coin
-    - Teling the current time and date
-    - Telling a joke, quote or fact
+    - Telling the current time and date
+    - Telling a joke, quote, or fact
     - Recommending a recipe to cook
     - Telling the weather for a specific location
 - A hub to manage all channels
