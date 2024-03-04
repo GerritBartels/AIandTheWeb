@@ -1,11 +1,11 @@
 # Flask Movie Recommender
 
-This project is a distributed messageboard build with flask. It is designed to function with the other channels from all participants of the university course. Our channels consist of a simple "just chatting" channel and a chatbot channel. The chatbot is built with rasa and can do all sorts of tasks from simple chatting to rolling a die or telling the weather for a specific location.
+This project is a distributed messageboard built with flask. It is designed to function with the other channels from all participants of the university course. Our channels consist of a simple "just chatting" channel and a chatbot channel. The chatbot is built with rasa and can do all sorts of tasks from simple chatting to rolling a die or telling the weather for a specific location.
 
 
 ## Showcase
 
-
+![MessageBoard](https://github.com/GerritBartels/AIandTheWeb/assets/64156238/1ba6b877-e3dc-4740-b94e-c4f82c876e24)
 
 
 ## Features
